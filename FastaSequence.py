@@ -54,7 +54,7 @@ def fasta_read(input):
     if type(input) == str:
         if input.endswith('.gz'):
             import gzip
-            input=gzip.gzipfile(input)
+            input=gzip.GzipFile(input)
         else:
             input=file(input)
     results = []
@@ -92,7 +92,7 @@ def fasta_write(output,s):
     if type(output) == str:
         if output.endswith('.gz'):
             import gzip
-            output=gzip.gzipfile(output,'w')
+            output=gzip.GzipFile(output,'w')
         else:
             output=file(output,'w')
     if type(s) == list:
