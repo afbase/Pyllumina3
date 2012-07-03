@@ -1,7 +1,7 @@
 import multiprocessing, subprocess
 from FastaSequence import fasta_read
 from Logger import Logger
-class Pyllumina:
+class MetasimPy:
     def __init__(self, KMER_Length = 100, FirstReadFile = None, SecondReadFile = None, EmpiricalPEProbability = 100, EmpiricalRead1Mid2End = None, EmpiricalRead2Mid2End = None, NumOfThreads = multiprocessing.cpu_count(), FastaFile = None, ExpectedCoverage=30, Mean = 100,Sigma = 10,FragmentDistribution = 'gaussian' ):
         """
         Inputs:
@@ -60,15 +60,13 @@ class Pyllumina:
         self.FastaFile = FastaFile
     def SetFastaSequence(self,Seq):
         self.FastaSequence = Seq
-    def SetNumOfReads(self,Quantity):
-        self.NumOfReads = Quantity
     def SetMetaSimCommand(self,O):
         self.MetaSimCommand = O
     def SetNumOfReads(self):
         FastaSeq = fasta_read(self.GetFastaFile())
         SeqObj = FastaSeq[0].GetSequence()
         SeqObjLen = len(SeqObj)
-        self.SetNumOfReads(SeqObjLen*self.GetExpectedCoverage()/self.GetKMER_Length())
+        self.NumOfReads = SeqObjLen*self.GetExpectedCoverage()/self.GetKMER_Length()
         
     def GetFragmentDistribution(self):
         return self.FragementDistribution
