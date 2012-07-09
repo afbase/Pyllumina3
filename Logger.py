@@ -1,6 +1,7 @@
 from subprocess import call
 import datetime
 import os
+import subprocess
 class Logger:
     def GetTimeStamp(self):
         now = datetime.datetime.now()
@@ -19,6 +20,22 @@ class Logger:
         TimeStamp = self.TimeStamp2String(self.GetTimeStamp())
         ErrorMsg  = 'Error ['+TimeStamp + ']:      ' + txt
         self.ErrorLog.write(ErrorMsg)
+    def RunCommand(self,Command):
+        """
+        Command is a string that is executed, the inputs and outputs are 
+        """
+        subprocess.call(Command,stdout=self.OutputLog, stdin=self.InputLog, stderr=self.ErrorLog)
+    def RunCommandSequence(self,ListOfCommands):
+        for X in ListOfCommands:
+            self.RunCommand(X)
+    def BuildLogFiles(self):
+        timestr = self.TimeStamp2String(self.INIT_TIME)
+        Error = timestr+'Error.Log'
+        Output = timestr+'Output.Log'
+        Input = timestr+'Input.Log'
+        self.ErrorLog = file(Error,'w')
+        self.OutputLog = file(Output,'w')  
+        self.InputLog = file(Input,'w')
     def __init__(self):
         self.Curpath = os.path.abspath(os.curdir)
         self.Curpath += '/'

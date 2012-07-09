@@ -6,7 +6,7 @@ class VelvetG:
         MinContigLength = The smallest continuous sequenced length output desired
         ExpCov = The expected coverage of times a base pair is sequenced 
         MaxCov = the largest amount of times a base pair is sequenced
-        (requires pairs ends option in velveth) InsertLength = To activate the use of read pairs, you must specify two parameters: the
+        (requires pairs ends option in velveth) InsertLength =  To activate the use of read pairs, you must specify two parameters: the
                                                                 expected (i.e. average) insert length (or at least a rough estimate), and the
                                                                 expected short-read k-mer coverage (see 5.1 for more information)
         """

@@ -1,0 +1,98 @@
+from numpy.random import multinomial
+import math
+import random
+class SizeDistribution:
+    def __init__(self,NumOfReads=None,Mean = None, Sigma = None,FolderName=None):
+        """
+        Inputs:
+        Mean = the average length of DNA Segments (integer)
+        Sigma = the standard deviation of the DNA Segments (integer)
+        NumOfReads = Number or reads for the distribution
+        FolderName = Name of folder optional
+        Objective of class: return a distribution file
+        """
+        self.SetNumOfReads(NumOfReads)
+        self.SetMean(Mean)
+        self.SetSigma(Sigma)
+        self.SetFolderName(FolderName)
+        self.BuildFile()
+        
+    def SetFolderName(self,FolderName):
+        self.FolderName = FolderName
+    def SetNumOfReads(self,NOR):
+        self.NumOfReads = NOR
+    def SetMean(self,AVG):
+        self.Mean = AVG
+    def SetSigma(self,Sigma):
+        self.Sigma = Sigma
+    
+    def GetFolderName(self):
+        return self.FolderName    
+    def GetMean(self):
+        return self.Mean
+    def GetSigma(self):
+        return self.Sigma
+    def GetNumOfReads(self):
+        return self.NumOfReads
+    def BuildFile(self):
+        """
+        This builds a Normal distribution of random vectors
+        with +-3 sigma distribution
+        """
+        LowerBound= self.GetMean() - 3 * self.GetSigma()
+        UpperBound= self.GetMean() + 3 * self.GetSigma()
+        DistroDomain = [i for i in range(LowerBound,UpperBound+1)]
+        NumOfReads = self.GetNumOfReads()
+        SizeDistro = RandIntVec(len(DistroDomain),NumOfReads)
+        FileName = 'SizeDistro-%dNumOfReads.txt'%NumOfReads
+        Output = file(FileName,'w')
+        for i in range(len(SizeDistro)):
+            temp = '%d    %d\n'%DistroDomain[i], SizeDistro[i]
+            Output.write(temp)
+        Output.close()
+        
+    def RandFloats(Size):
+        Scalar = 1.0
+        VectorSize = Size
+        RandomVector = [random.random() for i in range(VectorSize)]
+        RandomVectorSum = sum(RandomVector)
+        RandomVector = [Scalar*i/RandomVectorSum for i in RandomVector]
+        return RandomVector
+    def RandIntVec(ListSize, ListSumValue, Distribution='Normal'):
+        """
+        Inputs:
+        ListSize = the size of the list to return
+        ListSumValue = The sum of list values
+        Distribution = can be 'uniform' for uniform distribution, 'normal' for a normal distribution ~ N(0,1) with +/- 3 sigma  (default), or a list of size 'ListSize' or 'ListSize - 1' for an empirical (arbitrary) distribution. Probabilities of each of the p different outcomes. These should sum to 1 (however, the last element is always assumed to account for the remaining probability, as long as sum(pvals[:-1]) <= 1).  
+        Output:
+        A list of random integers of length 'ListSize' whose sum is 'ListSumValue'.
+        """
+        if type(Distribution) == list:
+            DistributionSize = len(Distribution)
+            if ListSize == DistributionSize or (ListSize-1) == DistributionSize:
+                Values = multinomial(ListSumValue,Distribution,size=1)
+                OutputValue = Values[0]
+        elif Distribution.lower() == 'uniform': #I do not recommend this!!!! I see that it is not as random (at least on my computer) as I had hoped
+            UniformDistro = [1/ListSize for i in range(ListSize)]
+            Values = multinomial(ListSumValue,UniformDistro,size=1)
+            OutputValue = Values[0]
+        elif Distribution.lower() == 'normal':
+            """
+            Normal Distribution Construction....It's very flexible and hideous
+            Assume a +-3 sigma range.  Warning, this may or may not be a suitable range for your implementation!
+            If one wishes to explore a different range, then changes the LowSigma and HighSigma values
+            """
+            LowSigma    = -3#-5 sigma
+            HighSigma   = 3#+5 sigma
+            StepSize    = 1/(float(ListSize) - 1)
+            ZValues     = [(LowSigma * (1-i*StepSize) +(i*StepSize)*HighSigma) for i in range(int(ListSize))]
+            #Construction parameters for N(Mean,Variance) - Default is N(0,1)
+            Mean        = 0
+            Var         = 1
+            TAU         = math.pi * 2.0#http://www.youtube.com/watch?v=jG7vhMMXagQ
+            NormalDistro= [(math.exp((-0.5)*math.pow((x-Mean), 2)/Var)/math.sqrt(TAU*Var)) for x in ZValues]
+            Values = multinomial(ListSumValue,NormalDistro,size=1)
+            OutputValue = Values[0]
+        else:
+            raise ValueError ('Cannot create desired vector')
+        return OutputValue
