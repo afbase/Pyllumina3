@@ -2,21 +2,23 @@ from numpy.random import multinomial
 import math
 import random
 class SizeDistribution:
-    def __init__(self,NumOfReads=None,Mean = None, Sigma = None,FolderName=None):
+    def __init__(self,FileName = NoneNumOfReads=None, Mean = None, Sigma = None):
         """
         Inputs:
+        (Required) FileName = Name of File
         Mean = the average length of DNA Segments (integer)
         Sigma = the standard deviation of the DNA Segments (integer)
         NumOfReads = Number or reads for the distribution
-        FolderName = Name of folder optional
         Objective of class: return a distribution file
         """
+        self.SetFileName(FileName)
         self.SetNumOfReads(NumOfReads)
         self.SetMean(Mean)
         self.SetSigma(Sigma)
-        self.SetFolderName(FolderName)
         self.BuildFile()
         
+    def SetFileName(self,FN):
+        self.FileName = FN
     def SetFolderName(self,FolderName):
         self.FolderName = FolderName
     def SetNumOfReads(self,NOR):
@@ -34,6 +36,9 @@ class SizeDistribution:
         return self.Sigma
     def GetNumOfReads(self):
         return self.NumOfReads
+    def GetFileName(self):
+        return self.FileName
+    
     def BuildFile(self):
         """
         This builds a Normal distribution of random vectors
@@ -43,22 +48,22 @@ class SizeDistribution:
         UpperBound= self.GetMean() + 3 * self.GetSigma()
         DistroDomain = [i for i in range(LowerBound,UpperBound+1)]
         NumOfReads = self.GetNumOfReads()
-        SizeDistro = RandIntVec(len(DistroDomain),NumOfReads)
-        FileName = 'SizeDistro-%dNumOfReads.txt'%NumOfReads
+        SizeDistro = self.RandIntVec(len(DistroDomain),NumOfReads)
+        FileName = self.GetFileName()
         Output = file(FileName,'w')
         for i in range(len(SizeDistro)):
             temp = '%d    %d\n'%DistroDomain[i], SizeDistro[i]
             Output.write(temp)
         Output.close()
         
-    def RandFloats(Size):
+    def RandFloats(self,Size):
         Scalar = 1.0
         VectorSize = Size
         RandomVector = [random.random() for i in range(VectorSize)]
         RandomVectorSum = sum(RandomVector)
         RandomVector = [Scalar*i/RandomVectorSum for i in RandomVector]
         return RandomVector
-    def RandIntVec(ListSize, ListSumValue, Distribution='Normal'):
+    def RandIntVec(self,ListSize, ListSumValue, Distribution='Normal'):
         """
         Inputs:
         ListSize = the size of the list to return
@@ -82,8 +87,8 @@ class SizeDistribution:
             Assume a +-3 sigma range.  Warning, this may or may not be a suitable range for your implementation!
             If one wishes to explore a different range, then changes the LowSigma and HighSigma values
             """
-            LowSigma    = -3#-5 sigma
-            HighSigma   = 3#+5 sigma
+            LowSigma    = -3#-3 sigma
+            HighSigma   = 3#+3 sigma
             StepSize    = 1/(float(ListSize) - 1)
             ZValues     = [(LowSigma * (1-i*StepSize) +(i*StepSize)*HighSigma) for i in range(int(ListSize))]
             #Construction parameters for N(Mean,Variance) - Default is N(0,1)
