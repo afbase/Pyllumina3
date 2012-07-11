@@ -104,13 +104,12 @@ def fasta_write(output,s):
             output.write("%s\n" % s.seq[i:i+line_width])
 
 
-def rfasta_write(output,seqs):
-    """
-        restricted fasta
-
-        this format (used by biopropector) is just fasta with the whole sequence on one line.
-    """
-    if type(output) == str: output=file(output,'w')
-    for s in seqs:
-        output.write("> %s\n" % s.header)
-        output.write("%s\n" % s.seq)
+#def fasta_write(output,seqs):
+#    """
+#        restricted fasta
+#        this format (used by biopropector) is just fasta with the whole sequence on one line.
+#    """
+#    if type(output) == str: output=file(output,'w')
+#    for s in seqs:
+#        output.write("> %s\n" % s.header)
+#        output.write("%s\n" % s.seq)

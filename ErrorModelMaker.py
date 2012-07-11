@@ -43,7 +43,7 @@ class ErrorModelMaker:
         self.BuildDeletion = Bool
             
     def GetVariation(self):
-        return self.Vartiation
+        return self.Variation
     def GetDeletionPoints(self):
         return self.DeletionPoints
     def GetInsertionPoints(self):
@@ -64,7 +64,7 @@ class ErrorModelMaker:
         self.BuildHeader(File)
         self.BuildSwitches(File)
         self.BuildDeletionErrors(File)
-        self.BuildsubstitutionErrors(File)
+        self.BuildSubstitutionErrors(File)
         self.BuildInsertionErrors(File)
         File.close()
     def BuildHeader(self,FilePtr):
@@ -76,11 +76,11 @@ class ErrorModelMaker:
         BasePoints = ['G','T','A','C']
         for X1 in BasePoints:
             for X2 in BasePoints:
-                Statement = '# (Set switch rates for %s following %s)\n' % X1,X2
+                Statement = '# (Set switch rates for %s following %s)\n' % (X1,X2)
                 FilePtr.write(Statement) 
                 for X3 in BasePoints:
                     SwitchValue = random.uniform(.3,.4+float_info.epsilon)
-                    Statement = '%s(%s,%s) %f\n'%X1,X2,X3,SwitchValue
+                    Statement = '%s(%s,%s) %f\n'%(X1,X2,X3,SwitchValue)
                     FilePtr.write(Statement)
     def BuildSubstitutionErrors(self,FilePtr):
         if self.GetBuildSubstitution() == True:

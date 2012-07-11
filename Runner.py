@@ -47,7 +47,7 @@ Mean = KMER_Lengths
 for i in Sigma:
     for j in Mean:
         for k in NumOfReads:
-            FileName = "DistributionModels/DistributionModel%fSig%dMu%dNOR.txt"%i,j,k
+            FileName = "DistributionModels/DistributionModel%dSig%dMu%dNOR.txt"%(i,j,k)
             SizeDistribution(Sigma = i, Mean = j, NumOfReads = k,FileName=FileName)
 
 

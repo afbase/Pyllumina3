@@ -2,7 +2,7 @@ from numpy.random import multinomial
 import math
 import random
 class SizeDistribution:
-    def __init__(self,FileName = NoneNumOfReads=None, Mean = None, Sigma = None):
+    def __init__(self,FileName = None,NumOfReads=None, Mean = None, Sigma = None):
         """
         Inputs:
         (Required) FileName = Name of File
@@ -52,7 +52,7 @@ class SizeDistribution:
         FileName = self.GetFileName()
         Output = file(FileName,'w')
         for i in range(len(SizeDistro)):
-            temp = '%d    %d\n'%DistroDomain[i], SizeDistro[i]
+            temp = '%d    %d\n'%(DistroDomain[i], SizeDistro[i])
             Output.write(temp)
         Output.close()
         
@@ -94,10 +94,32 @@ class SizeDistribution:
             #Construction parameters for N(Mean,Variance) - Default is N(0,1)
             Mean        = 0
             Var         = 1
-            TAU         = math.pi * 2.0#http://www.youtube.com/watch?v=jG7vhMMXagQ
-            NormalDistro= [(math.exp((-0.5)*math.pow((x-Mean), 2)/Var)/math.sqrt(TAU*Var)) for x in ZValues]
+            #NormalDistro= [self.NormalDistributionFunction(Mean, Var, x) for x in ZValues]
+            NormalDistro= list()
+            for i in range(len(ZValues)):
+                if i==0:
+                    ERFCVAL = 0.5 * math.erfc(-ZValues[i]/math.sqrt(2))
+                    NormalDistro.append(ERFCVAL)
+                elif i ==  len(ZValues) - 1:
+                    ERFCVAL = NormalDistro[0]
+                    NormalDistro.append(ERFCVAL)
+                else:
+                    ERFCVAL1 = 0.5 * math.erfc(-ZValues[i]/math.sqrt(2))
+                    ERFCVAL2 = 0.5 * math.erfc(-ZValues[i-1]/math.sqrt(2))
+                    ERFCVAL = ERFCVAL1 - ERFCVAL2
+                    NormalDistro.append(ERFCVAL)  
+            print "Normal Distribution sum = %f"%sum(NormalDistro)
             Values = multinomial(ListSumValue,NormalDistro,size=1)
             OutputValue = Values[0]
         else:
             raise ValueError ('Cannot create desired vector')
         return OutputValue
+    def NormalDistributionFunction(self,Mean, Sigma,X):
+        TAU         = math.pi * 2.0#http://www.youtube.com/watch?v=jG7vhMMXagQ
+        SQRTTAU     = math.sqrt(TAU)
+        Coefficient = math.pow(Sigma*SQRTTAU, -1.0)
+        Variance    = math.pow(Sigma,2.0)
+        Dividend    = math.pow(X-Mean,2.0)
+        Exponent    = -0.5 * (Dividend/Variance)
+        Result      = Coefficient * math.exp(Exponent)
+        return Result
