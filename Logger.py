@@ -30,9 +30,10 @@ class Logger:
             self.RunCommand(X)
     def BuildLogFiles(self):
         timestr = self.TimeStamp2String(self.INIT_TIME)
-        Error = timestr+'Error.Log'
-        Output = timestr+'Output.Log'
-        Input = timestr+'Input.Log'
+        CurrentDirectory = os.getcwd() + '/'
+        Error   = CurrentDirectory + timestr+'Error.Log'
+        Output  = CurrentDirectory + timestr+'Output.Log'
+        Input   = CurrentDirectory + timestr+'Input.Log'
         self.ErrorLog = file(Error,'w')
         self.OutputLog = file(Output,'w')  
         self.InputLog = file(Input,'w')

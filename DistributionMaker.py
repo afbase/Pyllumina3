@@ -89,7 +89,10 @@ class SizeDistribution:
             """
             LowSigma    = -3#-3 sigma
             HighSigma   = 3#+3 sigma
-            StepSize    = 1/(float(ListSize) - 1)
+            if (float(ListSize) - 1) == 0:
+                StepSize    = 0
+            else:
+                StepSize    = 1/(float(ListSize) - 1)
             ZValues     = [(LowSigma * (1-i*StepSize) +(i*StepSize)*HighSigma) for i in range(int(ListSize))]
             #Construction parameters for N(Mean,Variance) - Default is N(0,1)
             Mean        = 0
@@ -108,7 +111,7 @@ class SizeDistribution:
                     ERFCVAL2 = 0.5 * math.erfc(-ZValues[i-1]/math.sqrt(2))
                     ERFCVAL = ERFCVAL1 - ERFCVAL2
                     NormalDistro.append(ERFCVAL)  
-            print "Normal Distribution sum = %f"%sum(NormalDistro)
+            #print "Normal Distribution sum = %f"%sum(NormalDistro)
             Values = multinomial(ListSumValue,NormalDistro,size=1)
             OutputValue = Values[0]
         else:
