@@ -1,10 +1,12 @@
-import multiprocessing, subprocess
+import multiprocessing, subprocess, os
 from FastaSequence import fasta_read
 from Logger import Logger
 class MetasimPy:
-    def __init__(self, KMER_Length = 100, FirstReadFile = None, SecondReadFile = None, EmpiricalPEProbability = 100, EmpiricalRead1Mid2End = True, EmpiricalRead2Mid2End = True, NumOfThreads = multiprocessing.cpu_count(), FastaFile = None, ExpectedCoverage=30, Mean = 100,Sigma = 10,FragmentDistribution = 'gaussian',NumOfReads = None ):
+    CurrentDirectory = os.getcwd()
+    def __init__(self,OutputDirectory = 'MetaSimOutputs', LogObject = None, KMER_Length = 100, FirstReadFile = None, SecondReadFile = None, EmpiricalPEProbability = 100, EmpiricalRead1Mid2End = True, EmpiricalRead2Mid2End = True, NumOfThreads = multiprocessing.cpu_count(), FastaFile = None, ExpectedCoverage=30, Mean = 100,Sigma = 10,FragmentDistribution = 'gaussian',NumOfReads = None ):
         """
         Inputs:
+        LogObject = a Logger class that is specified.
         KMER_Length = an integer
         FirstReadFile = Specify an empirical error  model config file
         SecondReadFile = Specify an empirical error  model config file for the 2nd read.
@@ -19,6 +21,8 @@ class MetasimPy:
         FragmenDistribution = 'gaussian' by default or 'uniform' or filename (filename implies empirical)
         NumOfReads = Numbers of reads or base pairs 
         """
+        self.SetOutputDirectory(OutputDirectory)
+        self.SetLogObject(LogObject)
         self.SetFragmentDistribution(FragmentDistribution)
         self.SetMean(Mean)
         self.SetSigma(Sigma)
@@ -35,8 +39,26 @@ class MetasimPy:
         self.BuildOptionalStatement()
         self.RunStatement()
         
+    def SetOutputDirectory(self,OD):
+        self.OutputDirectory = OD
+        if type(OD) == str:
+            if OD[0] == '/':
+                self.OutputDirectory = OD
+            else:
+                self.OutputDirectory = self.CurrentDirectory + '/' + OD #Change relative file location to exact file location
+        else:
+            self.OutputDirectory = OD
+    def SetLogObject(self,LogObject):
+        self.LogObject = LogObject
     def SetFragmentDistribution(self, FD):
-        self.FragmentDistribution = FD
+        if type(FD) == str:
+            if FD[0] == '/':
+                self.FragmentDistribution = FD
+            else:
+                self.FragmentDistribution = self.CurrentDirectory + '/' + FD #Change relative file location to exact file location
+        else:
+            self.FragmentDistribution = FD
+        #self.FragmentDistribution = FD
     def SetMean(self,AVG):
         self.Mean = AVG
     def SetSigma(self,Sigma):
@@ -46,9 +68,15 @@ class MetasimPy:
     def SetKMER_Length(self,KMER_Length):
         self.KMER_Length = KMER_Length
     def SetFirstReadFile(self,FirstReadFile):
-        self.FirstReadFile = FirstReadFile
+        if FirstReadFile[0] == '/':
+            self.FirstReadFile = FirstReadFile
+        else:
+            self.FirstReadFile = self.CurrentDirectory + '/' + FirstReadFile #Change relative file location to exact file location
     def SetSecondReadFile(self,SecondReadFile):
-        self.SecondReadFile = SecondReadFile
+        if SecondReadFile[0] == '/':
+            self.SecondReadFile = SecondReadFile
+        else:
+            self.SecondReadFile = self.CurrentDirectory + '/' + SecondReadFile #Change relative file location to exact file location
     def SetEmpiricalPEProbability(self,EmpiricalPEProbability):
         self.EmpiricalPEProbability = EmpiricalPEProbability
     def SetEmpiricalRead1Mid2End(self,EmpiricalRead1Mid2End):
@@ -58,11 +86,14 @@ class MetasimPy:
     def SetNumOfThreads(self,NumOfThreads):
         self.NumOfThreads = NumOfThreads
     def SetFastaFile(self,FastaFile):
-        self.FastaFile = FastaFile
+        if FastaFile[0] == '/':
+            self.FastaFile = FastaFile
+        else:
+            self.FastaFile = self.CurrentDirectory + '/' + FastaFile #Change relative file location to exact file location
     def SetFastaSequence(self,Seq):
         self.FastaSequence = Seq
-    def SetMetaSimCommand(self,O):
-        self.MetaSimCommand = O
+    def SetMetaSimCommand(self,command):
+        self.MetaSimCommand = command
     def SetNumOfReads(self, Num = None):
         if Num == None:
             FastaSeq = fasta_read(self.GetFastaFile())
@@ -71,7 +102,7 @@ class MetasimPy:
             self.NumOfReads = SeqObjLen*self.GetExpectedCoverage()/self.GetKMER_Length()
         else:
             self.NumOfReads = Num
-        
+
     def GetFragmentDistribution(self):
         return self.FragmentDistribution
     def GetMean(self):
@@ -102,7 +133,11 @@ class MetasimPy:
         return self.NumOfReads
     def GetMetaSimCommand(self):
         return self.MetaSimCommand
-    
+    def GetLogObject(self):
+        return self.LogObject
+    def GetOutputDirectory(self):
+        return self.OutputDirectory
+       
     def BuildOptionalStatement(self):
         """
         Inputs:
@@ -119,41 +154,90 @@ class MetasimPy:
         Sigma = the standard deviation of the DNA Segments (integer)
         FragmenDistribution = 'gaussian' or 'uniform'
         """
-        Options  = 'MetaSim cmd -m '
-        """
-        1) Number of Reads
-        2) KMER Length
-        3) sigma
-        4) Fasta File
-        5) check Second Fasta File
-        6) PePprobability
-        7) Check Read1 mid2end & check Read2 mid2end
-        8) NumOfThreads
-        9) FragmentDistribution
-        """
-        Options += '-r %s '%self.GetNumOfReads()
-        Options += '-f %d '%self.GetKMER_Length()
-        Options += '-t %d '%self.GetSigma()
-        Options += '-g %s '%self.GetFirstReadFile()
+        Options = ['MetaSim', 'cmd', '-m']
+        #OutputDirectory
+        Options.append(self.GetOutputDirectory())
+        #Options += '-r %s '%self.GetNumOfReads()
+        Options.append('-r')
+        Options.append(str(self.GetNumOfReads()))
+        #Options += '-f %d '%self.GetKMER_Length()
+        Options.append('-f')
+        Options.append(str(self.GetKMER_Length()))
+        #Options += '-t %d '%self.GetSigma()
+        Options.append('-t')
+        Options.append(str(self.GetSigma()))
+        #Options += '-g %s '%self.GetFirstReadFile()
+        Options.append('-g')
+        Options.append(self.GetFirstReadFile())
         if self.GetSecondReadFile() != None:
-            Options += '-2 %s '%self.GetSecondReadFile()
-            Options += '--empirical-pe-probability %d '%self.GetEmpiricalPEProbability()
+            #Options += '-2 %s '%self.GetSecondReadFile()
+            Options.append('-2')
+            Options.append(self.GetSecondReadFile())
+            #Options += '--empirical-pe-probability %d '%self.GetEmpiricalPEProbability()
+            Options.append('--empirical-pe-probability')
+            Options.append(str(self.GetEmpiricalPEProbability()))
         if self.GetEmpiricalRead1Mid2End():
-            Options += '--empirical-read1-mid2end '
+            #Options += '--empirical-read1-mid2end '
+            Options.append('--empirical-read1-mid2end')
         if self.GetEmpiricalRead2Mid2End():
-            Options += '--empirical-read2-mid2end '
-        Options += '--threads %s '%self.GetNumOfThreads()
+            #Options += '--empirical-read2-mid2end '
+            Options.append('--empirical-read2-mid2end')
+        #Options += '--threads %s '%self.GetNumOfThreads()
+        Options.append('--threads')
+        Options.append(str(self.GetNumOfThreads()))
         if self.GetFragmentDistribution() == 'uniform':
-            Options += '-v '
+            #Options += '-v '
+            Options.append('-v')
         elif self.GetFragmentDistribution()== 'gaussian':
             self.SetFragmentDistribution(self.GetFragmentDistribution())
         else:
-            Options += '-w %s '%self.GetFragmentDistribution()
-        Options += '%s'%self.GetFastaFile()
+            #Options += '-w %s '%self.GetFragmentDistribution()
+            Options.append('-w')
+            Options.append(self.GetFragmentDistribution())
+        #Options += '%s'%self.GetFastaFile()
+        Options.append(self.GetFastaFile()) 
         self.SetMetaSimCommand(Options)
+        
+        
+        
+#        Options  = 'MetaSim cmd -m '
+#        """
+#        1) Number of Reads
+#        2) KMER Length
+#        3) sigma
+#        4) Fasta File
+#        5) check Second Fasta File
+#        6) PePprobability
+#        7) Check Read1 mid2end & check Read2 mid2end
+#        8) NumOfThreads
+#        9) FragmentDistribution
+#        """
+#        Options += '-r %s '%self.GetNumOfReads()
+#        Options += '-f %d '%self.GetKMER_Length()
+#        Options += '-t %d '%self.GetSigma()
+#        Options += '-g %s '%self.GetFirstReadFile()
+#        if self.GetSecondReadFile() != None:
+#            Options += '-2 %s '%self.GetSecondReadFile()
+#            Options += '--empirical-pe-probability %d '%self.GetEmpiricalPEProbability()
+#        if self.GetEmpiricalRead1Mid2End():
+#            Options += '--empirical-read1-mid2end '
+#        if self.GetEmpiricalRead2Mid2End():
+#            Options += '--empirical-read2-mid2end '
+#        Options += '--threads %s '%self.GetNumOfThreads()
+#        if self.GetFragmentDistribution() == 'uniform':
+#            Options += '-v '
+#        elif self.GetFragmentDistribution()== 'gaussian':
+#            self.SetFragmentDistribution(self.GetFragmentDistribution())
+#        else:
+#            Options += '-w %s '%self.GetFragmentDistribution()
+#        Options += '%s'%self.GetFastaFile()
+#        self.SetMetaSimCommand(Options)
     
     def RunStatement(self):
-        Logr = Logger()
-        Logr.BuildLogFiles()
+        if self.GetLogObject() == None:
+            Logr = Logger()
+            Logr.BuildLogFiles()
+        else:
+            Logr = self.GetLogObject()
         subprocess.call(self.GetMetaSimCommand(),stdin=Logr.InputLog,stderr=Logr.ErrorLog,stdout=Logr.OutputLog)
         

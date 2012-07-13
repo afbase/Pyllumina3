@@ -57,12 +57,13 @@ for i in Sigma:
 #MetaSimpy
 """
 Inputs:
+LogObject = a Logger class that is specified.
 KMER_Length = an integer
 FirstReadFile = Specify an empirical error  model config file
 SecondReadFile = Specify an empirical error  model config file for the 2nd read.
 EmpiricalPEProbability = Specify paired end probability for the  empirical error model.
-EmpiricalRead1Mid2End = read  #1 ends  at insert  end for  the  empirical error model.(True/False)
-EmpiricalRead2Mid2End = read  #2 ends  at insert  end for  the  empirical error model.(True/False)
+EmpiricalRead1Mid2End = read  #1 ends  at insert  end for  the  empirical error model.
+EmpiricalRead2Mid2End = read  #2 ends  at insert  end for  the  empirical error model.
 NumOfThreads = Set number of readsim threads
 FastaFile = fasta file or list of Fasta files (string or list of strings filenames respectively)
 ExpectedCoverage = the mean of the number of times a base pair is expected to be found in the total number of DNA segments (integer)
@@ -72,14 +73,15 @@ FragmenDistribution = 'gaussian' by default or 'uniform' or filename (filename i
 NumOfReads = Numbers of reads or base pairs 
 """
 from MetasimPy import MetasimPy
-
+from Logger import Logger
+LincolnLog = Logger()
+LincolnLog.BuildLogFiles()
 """
 Needs to do the following
 for each fasta file, for each expected coverage, for each mean, for each sigma:
 1)Get the number of reads from files
 2)set metasimpy settings
 3)hope for results
-
 """
 for filename in FastaFileList:
     for X in ExpectedCoverages:
@@ -106,25 +108,29 @@ for filename in FastaFileList:
             Mean = K
             Apple = 0#Sigma Value
             FragmenDistribution = "DistributionModels/DistributionModel%dSig%dMu%dNOR.txt"%(0,K,NOR)
-            MetasimPy(KMER_Length = KMER_Length,FirstReadFile = FirstReadFile,SecondReadFile = SecondReadFile,EmpiricalPEProbability = EmpiricalPEProbability,EmpiricalRead1Mid2End = EmpiricalRead1Mid2End,EmpiricalRead2Mid2End = EmpiricalRead2Mid2End,FastaFile = FastaFile,ExpectedCoverage = ExpectedCoverage,Mean = Mean,Sigma = Apple,FragmentDistribution = FragmenDistribution,NumOfReads = NOR)
-#VelvetH
-"""
-(Required) FileName      = None
-(Required) DirectoryName = None, the name of the directory to be created 
-HashLength      = 100, the kmer length
-FileFormat      ='fasta', 
-ReadType        ='shortPaired'
-"""
-from VelvetH import VelvetH
-#VelvetG
-"""
-        (required) OutputFolder = Output Directory of DeBruijn Graph Results
-        CoverageCutoff = Minimum amount of times a base pair is sequenced
-        MinContigLength = The smallest continuous sequenced length output desired
-        ExpCov = The expected coverage of times a base pair is sequenced 
-        MaxCov = the largest amount of times a base pair is sequenced
-        (requires pairs ends option in velveth) InsertLength =  To activate the use of read pairs, you must specify two parameters: the
-                                                                expected (i.e. average) insert length (or at least a rough estimate), and the
-                                                                expected short-read k-mer coverage (see 5.1 for more information)
-"""
-from VelvetG import VelvetG
+            MetasimPy(LogObject = LincolnLog, KMER_Length = KMER_Length,FirstReadFile = FirstReadFile,SecondReadFile = SecondReadFile,EmpiricalPEProbability = EmpiricalPEProbability,EmpiricalRead1Mid2End = EmpiricalRead1Mid2End,EmpiricalRead2Mid2End = EmpiricalRead2Mid2End,FastaFile = FastaFile,ExpectedCoverage = ExpectedCoverage,Mean = Mean,Sigma = Apple,FragmentDistribution = FragmenDistribution,NumOfReads = NOR)
+
+
+
+
+##VelvetH
+#"""
+#(Required) FileName      = None
+#(Required) DirectoryName = None, the name of the directory to be created 
+#HashLength      = 100, the kmer length
+#FileFormat      ='fasta', 
+#ReadType        ='shortPaired'
+#"""
+#from VelvetH import VelvetH
+##VelvetG
+#"""
+#        (required) OutputFolder = Output Directory of DeBruijn Graph Results
+#        CoverageCutoff = Minimum amount of times a base pair is sequenced
+#        MinContigLength = The smallest continuous sequenced length output desired
+#        ExpCov = The expected coverage of times a base pair is sequenced 
+#        MaxCov = the largest amount of times a base pair is sequenced
+#        (requires pairs ends option in velveth) InsertLength =  To activate the use of read pairs, you must specify two parameters: the
+#                                                                expected (i.e. average) insert length (or at least a rough estimate), and the
+#                                                                expected short-read k-mer coverage (see 5.1 for more information)
+#"""
+#from VelvetG import VelvetG
