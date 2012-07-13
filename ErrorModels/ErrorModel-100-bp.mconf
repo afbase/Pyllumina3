@@ -1,83 +1,83 @@
-#Error Model written by Pyllumina 2.1#Date of Creation: 2012711185859# (Set switch rates for G following G)
-G(G,G) 0.372516
-G(G,T) 0.390592
-G(G,A) 0.305671
-G(G,C) 0.308710
+#Error Model written by Pyllumina 2.1#Date of Creation: 2012712194114# (Set switch rates for G following G)
+G(G,G) 0.301165
+G(G,T) 0.388427
+G(G,A) 0.346394
+G(G,C) 0.334858
 # (Set switch rates for G following T)
-G(T,G) 0.388932
-G(T,T) 0.343843
-G(T,A) 0.386544
-G(T,C) 0.305013
+G(T,G) 0.334705
+G(T,T) 0.314407
+G(T,A) 0.311898
+G(T,C) 0.375276
 # (Set switch rates for G following A)
-G(A,G) 0.386088
-G(A,T) 0.327807
-G(A,A) 0.309105
-G(A,C) 0.360214
+G(A,G) 0.300306
+G(A,T) 0.337203
+G(A,A) 0.313023
+G(A,C) 0.379107
 # (Set switch rates for G following C)
-G(C,G) 0.350594
-G(C,T) 0.375006
-G(C,A) 0.361658
-G(C,C) 0.343453
+G(C,G) 0.355225
+G(C,T) 0.311459
+G(C,A) 0.331755
+G(C,C) 0.304704
 # (Set switch rates for T following G)
-T(G,G) 0.309390
-T(G,T) 0.350430
-T(G,A) 0.329648
-T(G,C) 0.343000
+T(G,G) 0.321307
+T(G,T) 0.336962
+T(G,A) 0.325703
+T(G,C) 0.353771
 # (Set switch rates for T following T)
-T(T,G) 0.395172
-T(T,T) 0.379608
-T(T,A) 0.347678
-T(T,C) 0.347409
+T(T,G) 0.313903
+T(T,T) 0.354518
+T(T,A) 0.342044
+T(T,C) 0.335468
 # (Set switch rates for T following A)
-T(A,G) 0.362638
-T(A,T) 0.359276
-T(A,A) 0.306306
-T(A,C) 0.392027
+T(A,G) 0.377430
+T(A,T) 0.388089
+T(A,A) 0.390143
+T(A,C) 0.367100
 # (Set switch rates for T following C)
-T(C,G) 0.351226
-T(C,T) 0.385674
-T(C,A) 0.381201
-T(C,C) 0.313258
+T(C,G) 0.346169
+T(C,T) 0.320044
+T(C,A) 0.300345
+T(C,C) 0.305296
 # (Set switch rates for A following G)
-A(G,G) 0.307947
-A(G,T) 0.375084
-A(G,A) 0.311396
-A(G,C) 0.399546
+A(G,G) 0.332167
+A(G,T) 0.351772
+A(G,A) 0.382644
+A(G,C) 0.390241
 # (Set switch rates for A following T)
-A(T,G) 0.350011
-A(T,T) 0.305944
-A(T,A) 0.321662
-A(T,C) 0.355064
+A(T,G) 0.381064
+A(T,T) 0.386013
+A(T,A) 0.320649
+A(T,C) 0.373820
 # (Set switch rates for A following A)
-A(A,G) 0.305257
-A(A,T) 0.303599
-A(A,A) 0.391740
-A(A,C) 0.338108
+A(A,G) 0.384848
+A(A,T) 0.326935
+A(A,A) 0.355119
+A(A,C) 0.311328
 # (Set switch rates for A following C)
-A(C,G) 0.301846
-A(C,T) 0.393457
-A(C,A) 0.352321
-A(C,C) 0.373579
+A(C,G) 0.326503
+A(C,T) 0.328175
+A(C,A) 0.351746
+A(C,C) 0.303936
 # (Set switch rates for C following G)
-C(G,G) 0.348988
-C(G,T) 0.316874
-C(G,A) 0.330101
-C(G,C) 0.349132
+C(G,G) 0.341983
+C(G,T) 0.339306
+C(G,A) 0.389403
+C(G,C) 0.308253
 # (Set switch rates for C following T)
-C(T,G) 0.325895
-C(T,T) 0.390964
-C(T,A) 0.312789
-C(T,C) 0.314607
+C(T,G) 0.334000
+C(T,T) 0.379840
+C(T,A) 0.312977
+C(T,C) 0.358575
 # (Set switch rates for C following A)
-C(A,G) 0.325255
-C(A,T) 0.300868
-C(A,A) 0.350073
-C(A,C) 0.396321
+C(A,G) 0.355537
+C(A,T) 0.346488
+C(A,A) 0.385696
+C(A,C) 0.342258
 # (Set switch rates for C following C)
-C(C,G) 0.338919
-C(C,T) 0.393832
-C(C,A) 0.343281
-C(C,C) 0.316847
+C(C,G) 0.389699
+C(C,T) 0.337593
+C(C,A) 0.391548
+C(C,C) 0.305174
 # Set Deletion Rates for every GDELETION_ERROR (G)
 0.006065
 0.006753
