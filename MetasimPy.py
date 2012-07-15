@@ -3,7 +3,7 @@ from FastaSequence import fasta_read
 from Logger import Logger
 class MetasimPy:
     CurrentDirectory = os.getcwd()
-    DEBUG = False
+    DEBUG = True
     def __init__(self,OutputDirectory = 'MetaSimOutputs', LogObject = None, KMER_Length = 100, FirstReadFile = None, SecondReadFile = None, EmpiricalPEProbability = 100, EmpiricalRead1Mid2End = True, EmpiricalRead2Mid2End = True, NumOfThreads = multiprocessing.cpu_count(), FastaFile = None, ExpectedCoverage=30, Mean = 100,Sigma = 10,FragmentDistribution = 'gaussian',NumOfReads = None ):
         """
         Inputs:

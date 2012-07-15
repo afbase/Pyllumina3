@@ -1,10 +1,10 @@
-import random
+import random, math
 from sys import float_info
 from Logger import Logger
 class ErrorModelMaker:
-    def __init__(self,BuildInsertion = True,
+    def __init__(self,BuildInsertion = False,
                  BuildSubstitution = True,
-                 BuildDeletion = True,
+                 BuildDeletion = False,
                  Variation = False,
                  FileName = None, 
                  N=100,
@@ -69,13 +69,18 @@ class ErrorModelMaker:
     
     def Normalize(self,X):
         Total = sum(X)
-        return [(i/Total) for i in X]
+        NewVector = [(i/Total) for i in X]
+        if sum(NewVector) != 1:
+            Difference = math.sqrt(math.pow(1-sum(NewVector),2))
+            Errors = Difference/float(len(X))
+            NewVector = [i + Errors for i in NewVector]
+        return NewVector
     def BuildErrorModel(self,FileName,N):
         Del = self.Normalize(self.GetDeletionPoints())
         Ins = self.Normalize(self.GetInsertionPoints())
         Sub = self.Normalize(self.GetSubstitutionPoints())
-        self.SetDeletionPoints(Del)
-        self.SetInsertionPoints(Ins)
+        #self.SetDeletionPoints(Del)
+        #self.SetInsertionPoints(Ins)
         self.SetSubstitutionPoints(Sub)
         File = open(FileName,'w')
         self.BuildHeader(File)
@@ -100,80 +105,148 @@ class ErrorModelMaker:
                     Statement = '%s(%s,%s) %f\n'%(X1,X2,X3,SwitchValue)
                     FilePtr.write(Statement)
     def BuildSubstitutionErrors(self,FilePtr):
+        Points = self.GetSubstitutionPoints()
+        LastPtIndex = len(Points)-1
         if self.GetBuildSubstitution() == True:
-            Points = self.GetSubstitutionPoints()
-            LastPtIndex = len(Points)-1
-            BasePoints = ['G','T','A','C']
-            for j in BasePoints:
-                Statement = '# Set Substitution Rates for every %s \n'% j
-                FilePtr.write(Statement)
-                Statement = 'SUBSTITUTION_ERROR (%s)\n' % j
-                FilePtr.write(Statement)
-                for i in range(self.GetN()):
-                    if i <= LastPtIndex and self.GetVariation() == False:
-                        Statement = '%f\n'%Points[i]
-                        FilePtr.write(Statement)
-                    elif i <= LastPtIndex and self.GetVariation() == True:
-                        Statement = '%f\n'%(Points[i] + random.gauss(0,.00025))
-                        FilePtr.write(Statement)
-                    elif i >= LastPtIndex and self.GetVariation() == False:
-                        Statement = '%f\n'%Points[LastPtIndex]
-                        FilePtr.write(Statement)
-                    else:
-                        Statement = '%f\n'%(Points[LastPtIndex]+random.gauss(0,.00025))
-                        FilePtr.write(Statement)
+            Statement = '# Set Substitution Rates \n'
+            FilePtr.write(Statement)
+            Statement = 'SUBSTITUTION_ERROR\n'
+            FilePtr.write(Statement)
+            for i in range(self.GetN()):
+                if i <= LastPtIndex and self.GetVariation() == False:
+                    Statement = '%.17f\n'%Points[i]
+                    FilePtr.write(Statement)
+                elif i <= LastPtIndex and self.GetVariation() == True:
+                    Statement = '%.17f\n'%(Points[i] + random.gauss(0,.00025))
+                    FilePtr.write(Statement)
+                elif i >= LastPtIndex and self.GetVariation() == False:
+                    Statement = '%.17f\n'%Points[LastPtIndex]
+                    FilePtr.write(Statement)
+                else:
+                    Statement = '%.17f\n'%(Points[LastPtIndex]+random.gauss(0,.00025))
+                    FilePtr.write(Statement)
             return      
         else:
             return
+#            Points = self.GetSubstitutionPoints()
+#            LastPtIndex = len(Points)-1
+#            BasePoints = ['G','T','A','C']
+#            for j in BasePoints:
+#                Statement = '# Set Substitution Rates for every %s \n'% j
+#                FilePtr.write(Statement)
+#                Statement = 'SUBSTITUTION_ERROR (%s)\n' % j
+#                FilePtr.write(Statement)
+#                for i in range(self.GetN()):
+#                    if i <= LastPtIndex and self.GetVariation() == False:
+#                        Statement = '%.47f\n'%Points[i]
+#                        FilePtr.write(Statement)
+#                    elif i <= LastPtIndex and self.GetVariation() == True:
+#                        Statement = '%.47f\n'%(Points[i] + random.gauss(0,.00025))
+#                        FilePtr.write(Statement)
+#                    elif i >= LastPtIndex and self.GetVariation() == False:
+#                        Statement = '%.47f\n'%Points[LastPtIndex]
+#                        FilePtr.write(Statement)
+#                    else:
+#                        Statement = '%.47f\n'%(Points[LastPtIndex]+random.gauss(0,.00025))
+#                        FilePtr.write(Statement)
+#            return      
+#        else:
+#            return
     def BuildInsertionErrors(self,FilePtr):
-        if self.GetBuildSubstitution() == True:
-            Points = self.GetInsertionPoints()
-            LastPtIndex = len(Points)-1
-            BasePoints = ['G','T','A','C']
-            for j in BasePoints:
-                Statement = '# Set Insertion Rates for every %s \n'% j
-                FilePtr.write(Statement)
-                Statement = 'INSERTION_ERROR (%s)\n' % j
-                FilePtr.write(Statement)
-                for i in range(self.GetN()):
-                    if i <= LastPtIndex and self.GetVariation() == False:
-                        Statement = '%f\n'%Points[i]
-                        FilePtr.write(Statement)
-                    elif i <= LastPtIndex and self.GetVariation() == True:
-                        Statement = '%f\n'%(Points[i] + random.gauss(0,.00025))
-                        FilePtr.write(Statement)
-                    elif i >= LastPtIndex and self.GetVariation() == False:
-                        Statement = '%f\n'%Points[LastPtIndex]
-                        FilePtr.write(Statement)
-                    else:
-                        Statement = '%f\n'%(Points[LastPtIndex]+random.gauss(0,.00025))
-                        FilePtr.write(Statement)
+        Points = self.GetInsertionPoints()
+        LastPtIndex = len(Points)-1
+        if self.GetBuildInsertion() == True:
+            Statement = '# Set Insertion Rates\n'
+            FilePtr.write(Statement)
+            Statement = 'INSERTION_ERROR\n'
+            FilePtr.write(Statement)
+            for i in range(self.GetN()):
+                if i <= LastPtIndex and self.GetVariation() == False:
+                    Statement = '%.17f\n'%Points[i]
+                    FilePtr.write(Statement)
+                elif i <= LastPtIndex and self.GetVariation() == True:
+                    Statement = '%.17f\n'%(Points[i] + random.gauss(0,.00025))
+                    FilePtr.write(Statement)
+                elif i >= LastPtIndex and self.GetVariation() == False:
+                    Statement = '%.17f\n'%Points[LastPtIndex]
+                    FilePtr.write(Statement)
+                else:
+                    Statement = '%.17f\n'%(Points[LastPtIndex]+random.gauss(0,.00025))
+                    FilePtr.write(Statement)
             return      
         else:
             return
+#        if self.GetBuildSubstitution() == True:
+#            Points = self.GetInsertionPoints()
+#            LastPtIndex = len(Points)-1
+#            BasePoints = ['G','T','A','C']
+#            for j in BasePoints:
+#                Statement = '# Set Insertion Rates for every %s \n'% j
+#                FilePtr.write(Statement)
+#                Statement = 'INSERTION_ERROR (%s)\n' % j
+#                FilePtr.write(Statement)
+#                for i in range(self.GetN()):
+#                    if i <= LastPtIndex and self.GetVariation() == False:
+#                        Statement = '%.47f\n'%Points[i]
+#                        FilePtr.write(Statement)
+#                    elif i <= LastPtIndex and self.GetVariation() == True:
+#                        Statement = '%.47f\n'%(Points[i] + random.gauss(0,.00025))
+#                        FilePtr.write(Statement)
+#                    elif i >= LastPtIndex and self.GetVariation() == False:
+#                        Statement = '%.47f\n'%Points[LastPtIndex]
+#                        FilePtr.write(Statement)
+#                    else:
+#                        Statement = '%.47f\n'%(Points[LastPtIndex]+random.gauss(0,.00025))
+#                        FilePtr.write(Statement)
+#            return      
+#        else:
+#            return
     def BuildDeletionErrors(self,FilePtr):
+        Points = self.GetDeletionPoints()
+        LastPtIndex = len(Points)-1
         if self.GetBuildDeletion() == True:
-            Points = self.GetDeletionPoints()
-            LastPtIndex = len(Points)-1
-            BasePoints = ['G','T','A','C']
-            for j in BasePoints:
-                Statement = '# Set Deletion Rates for every %s \n'% j
-                FilePtr.write(Statement)
-                Statement = 'DELETION_ERROR (%s)\n' % j
-                FilePtr.write(Statement)
-                for i in range(self.GetN()):
-                    if i <= LastPtIndex and self.GetVariation() == False:
-                        Statement = '%f\n'%Points[i]
-                        FilePtr.write(Statement)
-                    elif i <= LastPtIndex and self.GetVariation() == True:
-                        Statement = '%f\n'%(Points[i] + random.gauss(0,.00025))
-                        FilePtr.write(Statement)
-                    elif i >= LastPtIndex and self.GetVariation() == False:
-                        Statement = '%f\n'%Points[LastPtIndex]
-                        FilePtr.write(Statement)
-                    else:
-                        Statement = '%f\n'%(Points[LastPtIndex]+random.gauss(0,.00025))
-                        FilePtr.write(Statement)
+            Statement = '# Set Deletion Rates \n'
+            FilePtr.write(Statement)
+            Statement = 'DELETION_ERROR\n'
+            FilePtr.write(Statement)
+            for i in range(self.GetN()):
+                if i <= LastPtIndex and self.GetVariation() == False:
+                    Statement = '%.17f\n'%Points[i]
+                    FilePtr.write(Statement)
+                elif i <= LastPtIndex and self.GetVariation() == True:
+                    Statement = '%.17f\n'%(Points[i] + random.gauss(0,.00025))
+                    FilePtr.write(Statement)
+                elif i >= LastPtIndex and self.GetVariation() == False:
+                    Statement = '%.17f\n'%Points[LastPtIndex]
+                    FilePtr.write(Statement)
+                else:
+                    Statement = '%.17f\n'%(Points[LastPtIndex]+random.gauss(0,.00025))
+                    FilePtr.write(Statement)
             return      
         else:
             return
+#        if self.GetBuildDeletion() == True:
+#            Points = self.GetDeletionPoints()
+#            LastPtIndex = len(Points)-1
+#            BasePoints = ['G','T','A','C']
+#            for j in BasePoints:
+#                Statement = '# Set Deletion Rates for every %s \n'% j
+#                FilePtr.write(Statement)
+#                Statement = 'DELETION_ERROR (%s)\n' % j
+#                FilePtr.write(Statement)
+#                for i in range(self.GetN()):
+#                    if i <= LastPtIndex and self.GetVariation() == False:
+#                        Statement = '%.47f\n'%Points[i]
+#                        FilePtr.write(Statement)
+#                    elif i <= LastPtIndex and self.GetVariation() == True:
+#                        Statement = '%.47f\n'%(Points[i] + random.gauss(0,.00025))
+#                        FilePtr.write(Statement)
+#                    elif i >= LastPtIndex and self.GetVariation() == False:
+#                        Statement = '%.47f\n'%Points[LastPtIndex]
+#                        FilePtr.write(Statement)
+#                    else:
+#                        Statement = '%.47f\n'%(Points[LastPtIndex]+random.gauss(0,.00025))
+#                        FilePtr.write(Statement)
+#            return      
+#        else:
+#            return
