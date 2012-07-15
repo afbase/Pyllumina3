@@ -1,0 +1,170 @@
+\documentclass{article}
+\usepackage{longtable}
+\usepackage{rotating}
+\begin{document}
+
+\title{Standardized Velvet Assembly Report}
+\author{Jeremy Leipzig}
+
+\maketitle
+
+\tableofcontents
+\pagebreak
+\section{Assembly metadata}
+
+This is an assembly of \Sexpr{assmName}
+
+<<basicStuff,echo=FALSE>>=
+library(xtable)
+library(ggplot2)
+library(grid)
+source("config.R")
+myBasic<-read.table(paste(statFile,".stat",sep=""),sep="\t",col.names=c("reads","size"))
+myBasic
+@
+
+\section{Optimal assembly parameter estimation}
+<<permuteSetup,echo=FALSE>>=
+
+load(paste(statFile,".frame.RData",sep=""))
+rootDir<-"."
+@
+This document is a reusable Sweave script which can be used to interpret Velvet assemblies.
+
+
+
+The kmer index and coverage cutoff (cvCut) parameters are user-specified in Velvet and largely determine the length, specificity, and total contig count.
+
+The expected coverage variable (expCov) also appears to affect contig count and assembly length but to a lesser extent. In particular, a higher expected coverage parameter "relaxes a constraint which allows more nodes to be flagged as unique." This can create misassemblies.
+
+The summary table that appears at the end of this document attempts to quantify the effects on assembly quality for several combinations of kmer and cvCut. The columns are as follows:
+
+kmer - kmer index
+
+cvCut - coverage cutoff, measured in kmers coverage. This threshold specifies how many read k-mers must overlap for each contig kmer. The number of kmers per read is a function of read length L and k-mer length K (L-K+1). A 32bp read contains 12 21-mers. In that instance, a kmer coverage of 3.9x will correspond to a conventional X-coverage of 10x.
+
+ctgs - number of contigs
+
+asmLg - total length of all contigs (in bp)
+
+mean - mean length of the contigs (in bp)
+
+med - median length of the contigs (in bp)
+
+max - length of the longest contig (in bp)
+
+1k - number of contigs over 1kbp
+
+N50- the length of the shortest contig in an assembly such that the sum of contigs of equal length or longer is at least 50\% of the total length of all contigs.
+
+rdPc - percentage of input reads used in the assembly
+
+
+<<tableSetup,echo=FALSE>>=
+if(exists("cvLimits") & length(cvLimits)>0){
+myDataFrame<-myDataFrame[myDataFrame$cvCut %in% cvLimits,]
+}
+if(exists("kmerLimits") & length(kmerLimits)>0){
+myDataFrame<-myDataFrame[myDataFrame$kmer %in% kmerLimits,]
+}
+
+myDataFrame$rdUsagePc<-(myDataFrame$tiles/myDataFrame$reads)*100
+limitedTable<-as.data.frame(myDataFrame[,c("kmer","cvCut","expCov","ctgs","totalCoverage","N50","meanLgth","over1k","maxLgth","rdUsagePc")])
+
+limitedTable$N50<-as.integer(limitedTable$N50)
+limitedTable$totalCoverage<-as.integer(limitedTable$totalCoverage)
+limitedTable$maxLgth<-as.integer(limitedTable$maxLgth)
+limitedTable$meanLgth<-as.integer(limitedTable$meanLgth)
+limitedTable$over1k<-as.integer(limitedTable$over1k)
+
+names(limitedTable)[which(names(limitedTable)=='expCov')]<-'exp'
+names(limitedTable)[which(names(limitedTable)=='medianLgth')]<-'med'
+names(limitedTable)[which(names(limitedTable)=='meanLgth')]<-'mean'
+names(limitedTable)[which(names(limitedTable)=='maxLgth')]<-'max'
+names(limitedTable)[which(names(limitedTable)=='over1k')]<-'1k'
+names(limitedTable)[which(names(limitedTable)=='totalCoverage')]<-'asmLg'
+names(limitedTable)[which(names(limitedTable)=='rdUsagePc')]<-'rdPc'
+
+#this can be useful for doing dozens of iterations where page space becomes an issue
+#underTab<-limitedTable[limitedTable$kmer<=19,]
+#overTab<-limitedTable[limitedTable$kmer>19,]
+
+underTab<-limitedTable
+
+myXtableOne<-xtable(underTab[order(underTab$kmer,underTab$cvCut,decreasing=FALSE),],type=tex,caption="Assembly Parameter Permutations")
+#myXtableTwo<-xtable(overTab[order(overTab$kmer,overTab$cvCut,decreasing=FALSE),],type=tex,caption="Assembly Parameter Permutations")
+@ 
+
+\pagebreak
+<<tableOne,results=tex,echo=FALSE>>=
+print(myXtableOne,include.rownames=FALSE, size="\\footnotesize") 
+#floating.environment="sidewaystable")
+@
+
+%uncomment if you are using two tables because of space issues
+%\pagebreak
+%<<tableTwo,results=tex,echo=FALSE>>=
+%print(myXtableTwo,include.rownames=FALSE, size="\\footnotesize") 
+%@
+
+\pagebreak
+\section{Effect of kmer and cvCut on Assembly Profile}
+\subsection{Assembly coherency}
+The following scatterplot illustrates the effect of these variables on N50 and assembly length.
+N50 refers to the length of the shortest contig in an assembly such that the sum of contigs of equal length or longer is at least 50\% of the total length of all contigs.
+
+We can plot this to show the effect of kmer value (as progressively larger points) and coverage cutoff (strata connected by lines)
+on N50 and assembly length:
+
+<<plotCov,fig=TRUE,echo=FALSE>>=
+kmerDotSizes<-seq(1:length(levels(as.factor(myDataFrame$kmer))))*1
+p<-ggplot(myDataFrame[order(myDataFrame$cvCut),],aes(N50,totalCoverage))+
+geom_point(aes(size=as.factor(kmer))) +
+aes(colour=as.factor(cvCut)) +
+scale_size_manual(name="kmer",values = kmerDotSizes) +
+geom_line() +
+scale_colour_discrete("cvCut") +
+xlab("N50 (bp)") +
+ylab("Assembly Length (bp)") +
+opts(title="Assm. Parameters (kmer/cvCut) vs. Indicators(lgth/N50)")
+print(p)
+@
+
+\pagebreak
+Contig count can be misleading as contigs that are very short (less than a couple reads long) often dominate an assembly.
+For the purposes of this plot we disregard contigs less than 2 kmers in length
+
+<<plotCon,fig=TRUE,echo=FALSE>>=
+p<-ggplot(myDataFrame[order(myDataFrame$cvCut),],aes(N50,goodContigs)) +
+geom_point(aes(size=as.factor(kmer))) +
+aes(colour=as.factor(cvCut)) +
+scale_size_manual(name="kmer",values = kmerDotSizes) + 
+geom_line() +
+scale_colour_discrete("cvCut") +
+xlab("N50 (bp)") +
+ylab("Num Contigs > 2 kmers long") +
+opts(title="Assm. Parameters (kmer/cvCut) vs. Assm. Indicators(Ctg Count/N50)")
+print(p)
+@
+
+\pagebreak
+\subsection{Read usage}
+The fraction of reads, aka tiles, of the \Sexpr{myDataFrame[1,"reads"]} total reads used in each assembly may vary as
+kmer and cvCut are adjusted. An increase in read recruitment that is positively correlated with more stringent parameters
+may indicate the presence of misassemblies at lower stringencies.
+
+<<plotMeTiles,fig=TRUE,echo=FALSE>>=
+ylim<-c(0,100)
+p<-ggplot(myDataFrame[order(myDataFrame$cvCut),],aes(cvCut,rdUsagePc)) +
+geom_point(aes(size=as.factor(kmer),colour=as.factor(kmer)))  + 
+scale_size_manual(name="kmer",values = kmerDotSizes) +
+scale_colour_discrete("kmer") +
+xlab("Coverage cutoff") +
+ylab("Percent Read Usage")+
+scale_y_continuous(limits=ylim)+
+opts(title="Assm. Parameters (kmer/cvCut) vs. Percent Read Usage")
+print(p)
+@
+
+
+\end{document}

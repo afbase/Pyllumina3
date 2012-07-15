@@ -1,0 +1,89 @@
+K 25
+svn:wc:ra_dav:version-url
+V 22
+/svn/!svn/ver/45/trunk
+END
+shortReport.Rnw
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/svn/!svn/ver/45/trunk/shortReport.Rnw
+END
+report.Rnw
+K 25
+svn:wc:ra_dav:version-url
+V 33
+/svn/!svn/ver/45/trunk/report.Rnw
+END
+fastqAllSize
+K 25
+svn:wc:ra_dav:version-url
+V 35
+/svn/!svn/ver/31/trunk/fastqAllSize
+END
+fastaAllSize
+K 25
+svn:wc:ra_dav:version-url
+V 35
+/svn/!svn/ver/24/trunk/fastaAllSize
+END
+generateAssemblyStats.pl
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/27/trunk/generateAssemblyStats.pl
+END
+config.R
+K 25
+svn:wc:ra_dav:version-url
+V 31
+/svn/!svn/ver/11/trunk/config.R
+END
+mergePairs.py
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/svn/!svn/ver/43/trunk/mergePairs.py
+END
+histoLimits.cfg
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/svn/!svn/ver/5/trunk/histoLimits.cfg
+END
+Sweave.sty
+K 25
+svn:wc:ra_dav:version-url
+V 32
+/svn/!svn/ver/2/trunk/Sweave.sty
+END
+permute.sh
+K 25
+svn:wc:ra_dav:version-url
+V 33
+/svn/!svn/ver/32/trunk/permute.sh
+END
+README.txt
+K 25
+svn:wc:ra_dav:version-url
+V 33
+/svn/!svn/ver/26/trunk/README.txt
+END
+svn-commit.tmp
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/svn/!svn/ver/1/trunk/svn-commit.tmp
+END
+calculateStats.R
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/svn/!svn/ver/7/trunk/calculateStats.R
+END
+refReport.Rnw
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/svn/!svn/ver/45/trunk/refReport.Rnw
+END
