@@ -10,9 +10,7 @@
         SubstitutionPoints     = The array of Substituion rate values
 """
 from FastaSequence import *
-import glob
-import FastaSequence
-import os
+import glob, FastaSequence, os, subprocess
 CurrentDirectory = os.getcwd() + '/'
 """1) read all the fasta files, determine the size of the data"""
 FastaFileList = glob.glob('FastaFiles/*.fasta') #find all files of this format
@@ -45,7 +43,7 @@ for i in KMER_Lengths:
 """
 from DistributionMaker import SizeDistribution
 Sigma = [i for i in range(8,15)]
-Sigma.append(0)
+#Sigma.append(0)
 Mean = KMER_Lengths
 for i in Sigma:
     for j in Mean:
@@ -86,29 +84,40 @@ for each fasta file, for each expected coverage, for each mean, for each sigma:
 for filename in FastaFileList:
     for X in ExpectedCoverages:
         for K in KMER_Lengths:
-            #for apple in Sigma:
-            """
-            for i in FastaSizeList:
-                for j in ExpectedCoverages:
-                    for k in KMER_Lengths:
-                        NumOfReads.append( i * j / k )
-            """
-            FastaSeq = fasta_read(filename)
-            FastaSeqSize = len(FastaSequenceList[0].GetSeq())
-            NOR = FastaSeqSize * X / K  #Number of Reads
-            KMER_Length = K
-            ErrorModel = "ErrorModels/ErrorModel-%d-bp.mconf"%K
-            FirstReadFile = ErrorModel
-            SecondReadFile = ErrorModel
-            EmpiricalPEProbability = 100
-            EmpiricalRead1Mid2End = True
-            EmpiricalRead2Mid2End = True
-            FastaFile = filename
-            ExpectedCoverage = X
-            Mean = K
-            Apple = 0#Sigma Value
-            FragmenDistribution = "DistributionModels/DistributionModel%dSig%dMu%dNOR.txt"%(0,K,NOR)
-            MetasimPy(LogObject = LincolnLog, KMER_Length = KMER_Length,FirstReadFile = FirstReadFile,SecondReadFile = SecondReadFile,EmpiricalPEProbability = EmpiricalPEProbability,EmpiricalRead1Mid2End = EmpiricalRead1Mid2End,EmpiricalRead2Mid2End = EmpiricalRead2Mid2End,FastaFile = FastaFile,ExpectedCoverage = ExpectedCoverage,Mean = Mean,Sigma = Apple,FragmentDistribution = FragmenDistribution,NumOfReads = NOR)
+            for apple in Sigma:
+                """
+                for i in FastaSizeList:
+                    for j in ExpectedCoverages:
+                        for k in KMER_Lengths:
+                            NumOfReads.append( i * j / k )
+                """
+                FastaSeq = fasta_read(filename)
+                FastaSeqSize = len(FastaSequenceList[0].GetSeq())
+                NOR = FastaSeqSize * X / K  #Number of Reads
+                KMER_Length = K
+                ErrorModel = "ErrorModels/ErrorModel-%d-bp.mconf"%K
+                FirstReadFile = ErrorModel
+                SecondReadFile = ErrorModel
+                EmpiricalPEProbability = 100
+                EmpiricalRead1Mid2End = True
+                EmpiricalRead2Mid2End = True
+                FastaFile = filename
+                ExpectedCoverage = X
+                Mean = K
+                FragmenDistribution = "DistributionModels/DistributionModel%dSig%dMu%dNOR.txt"%(apple,K,NOR)
+                MetasimPy(LogObject = LincolnLog, 
+                          KMER_Length = KMER_Length,
+                          FirstReadFile = FirstReadFile,
+                          SecondReadFile = SecondReadFile,
+                          EmpiricalPEProbability = EmpiricalPEProbability,
+                          EmpiricalRead1Mid2End = EmpiricalRead1Mid2End,
+                          EmpiricalRead2Mid2End = EmpiricalRead2Mid2End,
+                          FastaFile = FastaFile,
+                          ExpectedCoverage = ExpectedCoverage,
+                          Mean = Mean,
+                          Sigma = apple,
+                          FragmentDistribution = FragmenDistribution,
+                          NumOfReads = NOR)
 
 
 
@@ -122,15 +131,35 @@ for filename in FastaFileList:
 #ReadType        ='shortPaired'
 #"""
 #from VelvetH import VelvetH
-##VelvetG
+#FNA_List= glob.glob('MetaSimOutputs/*.fna')#find all files of this format and remove the time hash and .fna
+#FNA_NameList= [ i[0:-13] for i in FNA_List]
+#MinContigs = [300, 400, 500]
+#VelvetHOutput = []
+#"""./velveth output_directory hash_length [[-file_format][-read_type] filename]
+#1) make output directory from FNA_NameList, KMER, MinContig
+#2) velveth
 #"""
-#        (required) OutputFolder = Output Directory of DeBruijn Graph Results
-#        CoverageCutoff = Minimum amount of times a base pair is sequenced
-#        MinContigLength = The smallest continuous sequenced length output desired
-#        ExpCov = The expected coverage of times a base pair is sequenced 
-#        MaxCov = the largest amount of times a base pair is sequenced
-#        (requires pairs ends option in velveth) InsertLength =  To activate the use of read pairs, you must specify two parameters: the
-#                                                                expected (i.e. average) insert length (or at least a rough estimate), and the
-#                                                                expected short-read k-mer coverage (see 5.1 for more information)
-#"""
-#from VelvetG import VelvetG
+#for i in range(len(FNA_List)):
+#    for j in range(len(KMER_Lengths)):
+#        for k in range(len(MinContigs)):
+#            FolderName = CurrentDirectory + 'VelvetOutputs/%s-%dKMER-%dMC'%(FNA_List[i],KMER_Lengths[j],MinContigs[k])
+#            VelvetFolderOutput = ['mkdir', FolderName]
+#            subprocess.call(VelvetFolderOutput,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
+#            VelvetHOutput = ['velveth', FolderName, '%d'%KMER_Lengths[j], '-fasta', '-shortPaired', FNA_List[i]] 
+#            subprocess.call(VelvetHOutput,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
+#
+###VelvetG
+##"""
+##        (required) OutputFolder = Output Directory of DeBruijn Graph Results
+##        CoverageCutoff = Minimum amount of times a base pair is sequenced
+##        MinContigLength = The smallest continuous sequenced length output desired
+##        ExpCov = The expected coverage of times a base pair is sequenced 
+##        MaxCov = the largest amount of times a base pair is sequenced
+##        (requires pairs ends option in velveth) InsertLength =  To activate the use of read pairs, you must specify two parameters: the
+##                                                                expected (i.e. average) insert length (or at least a rough estimate), and the
+##                                                                expected short-read k-mer coverage (see 5.1 for more information)
+##"""
+##from VelvetG import VelvetG
+LincolnLog.ErrorLog.close()
+LincolnLog.InputLog.close()
+LincolnLog.OutputLog.close()

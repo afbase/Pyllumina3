@@ -1,5 +1,9 @@
+from Logger import Logger
+import subprocess, os
 class VelvetH:
-    def __init__(self, FileName = None, DirectoryName = None, HashLength = 100, FileFormat ='fasta', ReadType='shortPaired'):
+    CurrentDirectory = os.getcwd()
+    DEBUG = False
+    def __init__(self, LogObject = None, FileName = None, DirectoryName = None, HashLength = 100, FileFormat ='-fasta', ReadType='-shortPaired'):
         """
         (Required) FileName = None
         (Required) DirectoryName = None, the name of the directory to be created 
@@ -7,6 +11,7 @@ class VelvetH:
         FileFormat ='fasta', 
         ReadType='shortPaired'
         """
+        self.SetLogObject(LogObject or Logger())
         self.SetFileName(FileName)
         self.SetDirectoryName(DirectoryName)
         self.SetHashLength(HashLength)
@@ -15,6 +20,8 @@ class VelvetH:
         OptionalCommands = self.BuildOptions()
         self.SetOptionalCommands(OptionalCommands)
         
+    def SetLogObject(self,LO):
+        self.LogObject = LO
     def SetOptionalCommands(self,OC):
         self.OptionalCommands = OC
     def SetFileName(self,FileName):
@@ -28,6 +35,8 @@ class VelvetH:
     def SetReadType(self,ReadType):
         self.ReadType = ReadType
     
+    def GetLogObject(self):
+        return self.LogObject
     def GetOptionalCommands(self):
         return self.OptionalCommands
     def GetFileName(self):
@@ -53,5 +62,24 @@ class VelvetH:
         Output:
         velveth output_directory hash_length [[-file_format][-read_type] filename]
         """
-        Text = "velveth %s %s -%s -%s %s" % DirectoryName, str(HashLength), FileFormat, ReadType, FileName
+        #Text = "velveth %s %s -%s -%s %s" % DirectoryName, str(HashLength), FileFormat, ReadType, FileName
+        Text = ['velveth', DirectoryName, str(HashLength), FileFormat, ReadType, FileName]
         return Text 
+    def RunStatement(self):
+        if self.DEBUG:
+            #make a space between each element of the list of metasim commands
+            Commands = self.GetOptionalCommands()
+            j = ''
+            for i in range(len(Commands)):
+                Commands[i] = Commands[i] + ' '
+                j = j + Commands[i]
+            self.SetMetaSimCommand(j)
+            os.system(self.GetOptionalCommands()) 
+        else:
+            if self.GetLogObject() == None:
+                Logr = Logger()
+                Logr.BuildLogFiles()
+            else:
+                Logr = self.GetLogObject()
+            subprocess.call(self.GetOptionalCommands(),stdin=Logr.InputLog,stderr=Logr.ErrorLog,stdout=Logr.OutputLog)
+            

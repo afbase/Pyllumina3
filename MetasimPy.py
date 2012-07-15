@@ -3,6 +3,7 @@ from FastaSequence import fasta_read
 from Logger import Logger
 class MetasimPy:
     CurrentDirectory = os.getcwd()
+    DEBUG = False
     def __init__(self,OutputDirectory = 'MetaSimOutputs', LogObject = None, KMER_Length = 100, FirstReadFile = None, SecondReadFile = None, EmpiricalPEProbability = 100, EmpiricalRead1Mid2End = True, EmpiricalRead2Mid2End = True, NumOfThreads = multiprocessing.cpu_count(), FastaFile = None, ExpectedCoverage=30, Mean = 100,Sigma = 10,FragmentDistribution = 'gaussian',NumOfReads = None ):
         """
         Inputs:
@@ -154,21 +155,28 @@ class MetasimPy:
         Sigma = the standard deviation of the DNA Segments (integer)
         FragmenDistribution = 'gaussian' or 'uniform'
         """
-        Options = ['MetaSim', 'cmd', '-m']
-        #OutputDirectory
-        Options.append(self.GetOutputDirectory())
-        #Options += '-r %s '%self.GetNumOfReads()
+        """
+        Order of inputs
+        1) Number of reads
+        2) empirical/solexa error model
+        3) Specify an empirical error model config file mconf
+        4) Specify an empirical error model config file for the 2nd read.
+        5) --empirical-pe-probability 100 
+        6) -f Mean Value
+        7) -t stddev 
+        8) Fast File
+        """
+        Options = ['MetaSim', 'cmd']
+        #1) Number of reads
         Options.append('-r')
         Options.append(str(self.GetNumOfReads()))
-        #Options += '-f %d '%self.GetKMER_Length()
-        Options.append('-f')
-        Options.append(str(self.GetKMER_Length()))
-        #Options += '-t %d '%self.GetSigma()
-        Options.append('-t')
-        Options.append(str(self.GetSigma()))
-        #Options += '-g %s '%self.GetFirstReadFile()
+        #2) empirical/solexa error model
+        Options.append('-m')
+        #3) Specify an empirical error model config file mconf
         Options.append('-g')
-        Options.append(self.GetFirstReadFile())
+        Options.append(str(self.GetFirstReadFile()))
+        #4) Specify an empirical error model config file for the 2nd read.
+        #5) --empirical-pe-probability 100 
         if self.GetSecondReadFile() != None:
             #Options += '-2 %s '%self.GetSecondReadFile()
             Options.append('-2')
@@ -176,27 +184,45 @@ class MetasimPy:
             #Options += '--empirical-pe-probability %d '%self.GetEmpiricalPEProbability()
             Options.append('--empirical-pe-probability')
             Options.append(str(self.GetEmpiricalPEProbability()))
-        if self.GetEmpiricalRead1Mid2End():
-            #Options += '--empirical-read1-mid2end '
-            Options.append('--empirical-read1-mid2end')
-        if self.GetEmpiricalRead2Mid2End():
-            #Options += '--empirical-read2-mid2end '
-            Options.append('--empirical-read2-mid2end')
-        #Options += '--threads %s '%self.GetNumOfThreads()
-        Options.append('--threads')
-        Options.append(str(self.GetNumOfThreads()))
-        if self.GetFragmentDistribution() == 'uniform':
-            #Options += '-v '
-            Options.append('-v')
-        elif self.GetFragmentDistribution()== 'gaussian':
-            self.SetFragmentDistribution(self.GetFragmentDistribution())
-        else:
-            #Options += '-w %s '%self.GetFragmentDistribution()
-            Options.append('-w')
-            Options.append(self.GetFragmentDistribution())
-        #Options += '%s'%self.GetFastaFile()
+        #6) -f Mean Value
+        Options.append('-f')
+        Options.append(str(self.GetKMER_Length()))
+        #7) -t stddev
+        Options.append('-t')
+        Options.append(str(self.GetSigma()))
+        #7.5) Set output Directory
+        Options.append('-d')
+        Options.append(self.GetOutputDirectory())
+        #8)  Set Distribution Size
+        Options.append('-w')
+        Options.append(self.GetFragmentDistribution()) 
+        #8.5) Fast File
         Options.append(self.GetFastaFile()) 
-        self.SetMetaSimCommand(Options)
+        #9) Set  commands
+        self.SetMetaSimCommand(Options)     
+          
+#        if self.GetEmpiricalRead1Mid2End():
+#            #Options += '--empirical-read1-mid2end '
+#            Options.append('--empirical-read1-mid2end')
+#        if self.GetEmpiricalRead2Mid2End():
+#            #Options += '--empirical-read2-mid2end '
+#            Options.append('--empirical-read2-mid2end')
+#        #Options += '--threads %s '%self.GetNumOfThreads()
+#        Options.append('--threads')
+#        Options.append(str(self.GetNumOfThreads()))
+#        if self.GetFragmentDistribution() == 'uniform':
+#            #Options += '-v '
+#            Options.append('-v')
+#        elif self.GetFragmentDistribution()== 'gaussian':
+#            self.SetFragmentDistribution(self.GetFragmentDistribution())
+#        else:
+#            #Options += '-w %s '%self.GetFragmentDistribution()
+#            Options.append('-w')
+#            Options.append(self.GetFragmentDistribution())
+#        #OutputDirectory
+#        Options.append
+#        Options.append(self.GetOutputDirectory())
+
         
         
         
@@ -234,10 +260,20 @@ class MetasimPy:
 #        self.SetMetaSimCommand(Options)
     
     def RunStatement(self):
-        if self.GetLogObject() == None:
-            Logr = Logger()
-            Logr.BuildLogFiles()
+        if self.DEBUG:
+            #make a space between each element of the list of metasim commands
+            Commands = self.GetMetaSimCommand()
+            j = ''
+            for i in range(len(Commands)):
+                Commands[i] = Commands[i] + ' '
+                j = j + Commands[i]
+            self.SetMetaSimCommand(j)
+            os.system(self.GetMetaSimCommand()) 
         else:
-            Logr = self.GetLogObject()
-        subprocess.call(self.GetMetaSimCommand(),stdin=Logr.InputLog,stderr=Logr.ErrorLog,stdout=Logr.OutputLog)
-        
+            if self.GetLogObject() == None:
+                Logr = Logger()
+                Logr.BuildLogFiles()
+            else:
+                Logr = self.GetLogObject()
+            subprocess.call(self.GetMetaSimCommand(),stdin=Logr.InputLog,stderr=Logr.ErrorLog,stdout=Logr.OutputLog)
+            
