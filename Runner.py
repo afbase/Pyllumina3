@@ -138,6 +138,8 @@ FNA_List= glob.glob('MetaSimOutputs/*.fna')#find all files of this format and re
 FNA_NameList= [ i[15:-13] for i in FNA_List]
 MinContigs = [300, 400, 500]
 VelvetHOutput = []
+ExpectedCoverage = [10]#TestingMode
+KMER_Lengths = [99]         #TestingMode
 """./velveth output_directory hash_length [[-file_format][-read_type] filename]
 1) make output directory from FNA_NameList, KMER, MinContig
 2) velveth
@@ -145,44 +147,49 @@ VelvetHOutput = []
 for i in range(len(FNA_List)):
     for j in range(len(KMER_Lengths)):
         for k in range(len(MinContigs)):
-            """
-            DATE=`date +%m%d%H%M%S`
-            mkdir $1_KMER$2_CUT$3_EXP$4_CNTG$5
-            velveth $1_KMER$2_CUT$3_EXP$4_CNTG$5 $2 -fasta $6 &> $DATE_VH_$1_KMER$2_CUT$3_EXP$4_CNTG$5.log
-            mkdir  $DATE$1_KMER$2_CUT$3_EXP$4_CNTG$5
-            cd  $DATE$1_KMER$2_CUT$3_EXP$4_CNTG$5
-            ln -s ../$1_KMER$2_CUT$3_EXP$4_CNTG$5/Sequences
-            ln -s ../$1_KMER$2_CUT$3_EXP$4_CNTG$5/Roadmaps
-            cd ..
-            velvetg $DATE_$1_KMER$2_CUT$3_EXP$4_CNTG$5 -cov_cutoff $3 -exp_cov $4 -min_contig_lgth $5 &> $DATE_VG_$1_KMER$2_CUT$3_EXP$4_CNTG$5.log
-            """
-            #1)Make Directory
-            FolderName1 = CurrentDirectory + 'VelvetOutputs/%s-%dKMER-%dMC'%(FNA_NameList[i],KMER_Lengths[j],MinContigs[k])
-            VelvetFolderOutput = ['mkdir', FolderName1]
-            subprocess.call(VelvetFolderOutput,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
-            #VelvetH
-            VelvetHOutput = ['velveth', FolderName1, '%d'%KMER_Lengths[j], '-fasta', '-shortPaired', FNA_List[i]] 
-            subprocess.call(VelvetHOutput,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
-            #Make Directory with date
-            FolderName2 = CurrentDirectory + 'VelvetOutputs/%s-%s-%dKMER-%dMC'%(Time,FNA_NameList[i],KMER_Lengths[j],MinContigs[k])
-            VelvetFolderOutput = ['mkdir', FolderName2]
-            subprocess.call(VelvetFolderOutput,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
-            #change directory to the directory with date
-            ChangeDirectoryInput1 = ['cd', FolderName2]
-            subprocess.call(ChangeDirectoryInput1,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog) 
-            #Symbolic Link1
-            Seq = FolderName1 + '/Sequences'
-            SymbolicLink1 = ['ln', '-s', Seq]
-            subprocess.call(SymbolicLink1,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
-            #Symbolic Link2
-            Roadmaps = FolderName2 + '/Roadmaps'
-            SymbolicLink2 = ['ln', '-s', Roadmaps]
-            subprocess.call(SymbolicLink2,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
-            #Change Directory
-            CD = ['cd','..']
-            subprocess.call(CD,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
-            #VelvetG
-            Velvet = ['velvetg',FolderName2, '-cov_cutoff', '4', '-exp_cov', $4 -min_contig_lgth $5]
+            for XP in range(len(ExpectedCoverage)):
+                """
+                DATE=`date +%m%d%H%M%S`
+                mkdir $1_KMER$2_CUT$3_EXP$4_CNTG$5
+                velveth $1_KMER$2_CUT$3_EXP$4_CNTG$5 $2 -fasta $6 &> $DATE_VH_$1_KMER$2_CUT$3_EXP$4_CNTG$5.log
+                mkdir  $DATE$1_KMER$2_CUT$3_EXP$4_CNTG$5
+                cd  $DATE$1_KMER$2_CUT$3_EXP$4_CNTG$5
+                ln -s ../$1_KMER$2_CUT$3_EXP$4_CNTG$5/Sequences
+                ln -s ../$1_KMER$2_CUT$3_EXP$4_CNTG$5/Roadmaps
+                cd ..
+                velvetg $DATE_$1_KMER$2_CUT$3_EXP$4_CNTG$5 -cov_cutoff $3 -exp_cov $4 -min_contig_lgth $5 &> $DATE_VG_$1_KMER$2_CUT$3_EXP$4_CNTG$5.log
+                """
+                #1)Make Directory
+                FolderName1 = CurrentDirectory + 'VelvetOutputs/%s-%dKMER-%dXC-%dMC'%(FNA_NameList[i],KMER_Lengths[j],ExpectedCoverage[XP],MinContigs[k])
+                VelvetFolderOutput = ['mkdir', FolderName1]
+                subprocess.call(VelvetFolderOutput,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
+                #VelvetH
+                VelvetHOutput = ['velveth', FolderName1, '%d'%KMER_Lengths[j], '-fasta', '-shortPaired', FNA_List[i]] 
+                subprocess.call(VelvetHOutput,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
+                #Make Directory with date
+                FolderName2 = CurrentDirectory + 'VelvetOutputs/%s-%s-%dKMER-%dXC-%dMC'%(Time,FNA_NameList[i],KMER_Lengths[j],ExpectedCoverage[XP],MinContigs[k])
+                VelvetFolderOutput = ['mkdir', FolderName2]
+                subprocess.call(VelvetFolderOutput,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
+#                #change directory to the directory with date
+#                ChangeDirectoryInput1 = ['cd', FolderName2]
+#                subprocess.call(ChangeDirectoryInput1,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog) 
+                #Symbolic Link1
+                ActualSeq = FolderName1 + '/Sequences'
+                LinkedSeq = FolderName2 + '/Sequences'
+                SymbolicLink1 = ['ln', '-s', ActualSeq,LinkedSeq]
+                subprocess.call(SymbolicLink1,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
+                #Symbolic Link2
+                ActualRoadmaps = FolderName1 + '/Roadmaps'
+                LinkedRoadmaps = FolderName2 + '/Roadmaps'
+                SymbolicLink2 = ['ln', '-s', ActualRoadmaps,LinkedRoadmaps]
+                subprocess.call(SymbolicLink2,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
+#                #Change Directory
+#                CD = ['cd','..']
+#                subprocess.call(CD,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
+                #VelvetG
+                ExpectedCov = ExpectedCoverage[XP]
+                Velvet = ['velvetg',FolderName2, '-cov_cutoff', '4', '-exp_cov', '%d'%ExpectedCov, '-min_contig_lgth', '%d'%MinContigs[k]]
+                subprocess.call(Velvet,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
 ##VelvetG
 #"""
 #        (required) OutputFolder = Output Directory of DeBruijn Graph Results
