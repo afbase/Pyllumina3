@@ -22,7 +22,7 @@ for filename in FastaFileList:
     FastaSequenceList = fasta_read(filename)
     FastaSizeList.append(len(FastaSequenceList[0].GetSeq()))
 ExpectedCoverages = [i for i in range(10,51,5)]
-KMER_Lengths = [100]
+KMER_Lengths = [75]
 NumOfReads = list()
 for i in FastaSizeList:
     for j in ExpectedCoverages:
@@ -32,10 +32,12 @@ from ErrorModelMaker import ErrorModelMaker
 #Build Error Model
 #Need to develop Error File Name
 for i in KMER_Lengths:
-    FileName1 = "ErrorModels/ErrorModel-%d-bp.mconf"%i
-    FileName2 = "ErrorModels/ModifiedErrorModel-%d-bp.mconf"%i
+    #FileName1 = "ErrorModels/ErrorModel-%d-bp.mconf"%i
+    #FileName2 = "ErrorModels/ModifiedErrorModel-%d-bp.mconf"%i
+    FileName1 = "ErrorModels/EMTest-%d-bp.mconf"%i
+    #FileName2 = "ErrorModels/VaryEMTest-%d-bp.mconf"%i
     BasicError = ErrorModelMaker(FileName = FileName1)
-    VaryError = ErrorModelMaker(Variation = True, FileName=FileName2)
+    #VaryError = ErrorModelMaker(Variation = True, FileName=FileName2)
 #SizeDistribution
 """
         Inputs:
@@ -55,72 +57,72 @@ for i in Sigma:
             SizeDistribution(Sigma = i, Mean = j, NumOfReads = k,FileName=FileName)
 
 
-##MetaSimpy
-#"""
-#Inputs:
-#LogObject = a Logger class that is specified.
-#KMER_Length = an integer
-#FirstReadFile = Specify an empirical error  model config file
-#SecondReadFile = Specify an empirical error  model config file for the 2nd read.
-#EmpiricalPEProbability = Specify paired end probability for the  empirical error model.
-#EmpiricalRead1Mid2End = read  #1 ends  at insert  end for  the  empirical error model.
-#EmpiricalRead2Mid2End = read  #2 ends  at insert  end for  the  empirical error model.
-#NumOfThreads = Set number of readsim threads
-#FastaFile = fasta file or list of Fasta files (string or list of strings filenames respectively)
-#ExpectedCoverage = the mean of the number of times a base pair is expected to be found in the total number of DNA segments (integer)
-#Mean = the average length of DNA Segments (integer)
-#Sigma = the standard deviation of the DNA Segments (integer)
-#FragmenDistribution = 'gaussian' by default or 'uniform' or filename (filename implies empirical)
-#NumOfReads = Numbers of reads or base pairs 
-#"""
-#from MetasimPy import MetasimPy
+#MetaSimpy
+"""
+Inputs:
+LogObject = a Logger class that is specified.
+KMER_Length = an integer
+FirstReadFile = Specify an empirical error  model config file
+SecondReadFile = Specify an empirical error  model config file for the 2nd read.
+EmpiricalPEProbability = Specify paired end probability for the  empirical error model.
+EmpiricalRead1Mid2End = read  #1 ends  at insert  end for  the  empirical error model.
+EmpiricalRead2Mid2End = read  #2 ends  at insert  end for  the  empirical error model.
+NumOfThreads = Set number of readsim threads
+FastaFile = fasta file or list of Fasta files (string or list of strings filenames respectively)
+ExpectedCoverage = the mean of the number of times a base pair is expected to be found in the total number of DNA segments (integer)
+Mean = the average length of DNA Segments (integer)
+Sigma = the standard deviation of the DNA Segments (integer)
+FragmenDistribution = 'gaussian' by default or 'uniform' or filename (filename implies empirical)
+NumOfReads = Numbers of reads or base pairs 
+"""
+from MetasimPy import MetasimPy
 from Logger import Logger
 LincolnLog = Logger()
 LincolnLog.BuildLogFiles()
-#"""
-#Needs to do the following
-#for each fasta file, for each expected coverage, for each mean, for each sigma:
-#1)Get the number of reads from files
-#2)set metasimpy settings
-#3)hope for results
-#"""
-#for filename in FastaFileList:
-#    for X in ExpectedCoverages:
-#        for K in KMER_Lengths:
-#            for apple in Sigma:
-#                """
-#                for i in FastaSizeList:
-#                    for j in ExpectedCoverages:
-#                        for k in KMER_Lengths:
-#                            NumOfReads.append( i * j / k )
-#                """
-#                FastaSeq = fasta_read(filename)
-#                FastaSeqSize = len(FastaSequenceList[0].GetSeq())
-#                NOR = FastaSeqSize * X / K  #Number of Reads
-#                KMER_Length = K
-#                ErrorModel = "ErrorModels/ErrorModel-%d-bp.mconf"%K
-#                FirstReadFile = ErrorModel
-#                SecondReadFile = ErrorModel
-#                EmpiricalPEProbability = 100
-#                EmpiricalRead1Mid2End = True
-#                EmpiricalRead2Mid2End = True
-#                FastaFile = filename
-#                ExpectedCoverage = X
-#                Mean = K
-#                FragmenDistribution = "DistributionModels/DistributionModel%dSig%dMu%dNOR.txt"%(apple,K,NOR)
-#                MetasimPy(LogObject = LincolnLog, 
-#                          KMER_Length = KMER_Length,
-#                          FirstReadFile = FirstReadFile,
-#                          SecondReadFile = SecondReadFile,
-#                          EmpiricalPEProbability = EmpiricalPEProbability,
-#                          EmpiricalRead1Mid2End = EmpiricalRead1Mid2End,
-#                          EmpiricalRead2Mid2End = EmpiricalRead2Mid2End,
-#                          FastaFile = FastaFile,
-#                          ExpectedCoverage = ExpectedCoverage,
-#                          Mean = Mean,
-#                          Sigma = apple,
-#                          FragmentDistribution = FragmenDistribution,
-#                          NumOfReads = NOR)
+"""
+Needs to do the following
+for each fasta file, for each expected coverage, for each mean, for each sigma:
+1)Get the number of reads from files
+2)set metasimpy settings
+3)hope for results
+"""
+for filename in FastaFileList:
+    for X in ExpectedCoverages:
+        for K in KMER_Lengths:
+            for apple in Sigma:
+                """
+                for i in FastaSizeList:
+                    for j in ExpectedCoverages:
+                        for k in KMER_Lengths:
+                            NumOfReads.append( i * j / k )
+                """
+                FastaSeq = fasta_read(filename)
+                FastaSeqSize = len(FastaSequenceList[0].GetSeq())
+                NOR = FastaSeqSize * X / K  #Number of Reads
+                KMER_Length = K
+                ErrorModel = "ErrorModels/ErrorModel-%d-bp.mconf"%K
+                FirstReadFile = ErrorModel
+                SecondReadFile = ErrorModel
+                EmpiricalPEProbability = 100
+                EmpiricalRead1Mid2End = True
+                EmpiricalRead2Mid2End = True
+                FastaFile = filename
+                ExpectedCoverage = X
+                Mean = K
+                FragmenDistribution = "DistributionModels/DistributionModel%dSig%dMu%dNOR.txt"%(apple,K,NOR)
+                MetasimPy(LogObject = LincolnLog, 
+                          KMER_Length = KMER_Length,
+                          FirstReadFile = FirstReadFile,
+                          SecondReadFile = SecondReadFile,
+                          EmpiricalPEProbability = EmpiricalPEProbability,
+                          EmpiricalRead1Mid2End = EmpiricalRead1Mid2End,
+                          EmpiricalRead2Mid2End = EmpiricalRead2Mid2End,
+                          FastaFile = FastaFile,
+                          ExpectedCoverage = ExpectedCoverage,
+                          Mean = Mean,
+                          Sigma = apple,
+                          FragmentDistribution = FragmenDistribution,
+                          NumOfReads = NOR)
 
 
 

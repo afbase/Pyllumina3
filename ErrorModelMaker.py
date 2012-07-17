@@ -1,6 +1,7 @@
 import random, math
 from sys import float_info
 from Logger import Logger
+from numpy import version
 class ErrorModelMaker:
     def __init__(self,BuildInsertion = False,
                  BuildSubstitution = True,
@@ -69,12 +70,19 @@ class ErrorModelMaker:
     
     def Normalize(self,X):
         Total = sum(X)
-        NewVector = [(i/Total) for i in X]
-        if sum(NewVector) != 1:
-            Difference = math.sqrt(math.pow(1-sum(NewVector),2))
-            Errors = Difference/float(len(X))
-            NewVector = [i + Errors for i in NewVector]
-        return NewVector
+        NumpyX = array([float(i) for i in X])
+        Norm = linalg.norm(NumpyX,ord=1)
+        Normalize = NumpyX/Norm
+        Normalize[0] = Normalize[0] + (Norm)
+        return Normalize
+#        linalg.norm(x, ord)
+#        N = sqrt(dot(NumpyX,NumpyX.conj()))
+#        NewVector = [(i/Total) for i in X]
+#        if sum(NewVector) != 1:
+#            Difference = math.sqrt(math.pow(1-sum(NewVector),2))
+#            Errors = Difference/float(len(X))
+#            NewVector = [i + Errors for i in NewVector]
+#        return NewVector
     def BuildErrorModel(self,FileName,N):
         Del = self.Normalize(self.GetDeletionPoints())
         Ins = self.Normalize(self.GetInsertionPoints())
@@ -114,16 +122,17 @@ class ErrorModelMaker:
             FilePtr.write(Statement)
             for i in range(self.GetN()):
                 if i <= LastPtIndex and self.GetVariation() == False:
-                    Statement = '%.17f\n'%Points[i]
+                    Statement = '%.47f\n'%Points[i]
                     FilePtr.write(Statement)
                 elif i <= LastPtIndex and self.GetVariation() == True:
-                    Statement = '%.17f\n'%(Points[i] + random.gauss(0,.00025))
+                    random.gauss()
+                    Statement = '%.47f\n'%(Points[i] + random.gauss(0,.00025))
                     FilePtr.write(Statement)
                 elif i >= LastPtIndex and self.GetVariation() == False:
-                    Statement = '%.17f\n'%Points[LastPtIndex]
+                    Statement = '%.47f\n'%Points[LastPtIndex]
                     FilePtr.write(Statement)
                 else:
-                    Statement = '%.17f\n'%(Points[LastPtIndex]+random.gauss(0,.00025))
+                    Statement = '%.47f\n'%(Points[LastPtIndex]+random.gauss(0,.00025))
                     FilePtr.write(Statement)
             return      
         else:
@@ -162,16 +171,16 @@ class ErrorModelMaker:
             FilePtr.write(Statement)
             for i in range(self.GetN()):
                 if i <= LastPtIndex and self.GetVariation() == False:
-                    Statement = '%.17f\n'%Points[i]
+                    Statement = '%.47f\n'%Points[i]
                     FilePtr.write(Statement)
                 elif i <= LastPtIndex and self.GetVariation() == True:
-                    Statement = '%.17f\n'%(Points[i] + random.gauss(0,.00025))
+                    Statement = '%.47f\n'%(Points[i] + random.gauss(0,.00025))
                     FilePtr.write(Statement)
                 elif i >= LastPtIndex and self.GetVariation() == False:
-                    Statement = '%.17f\n'%Points[LastPtIndex]
+                    Statement = '%.47f\n'%Points[LastPtIndex]
                     FilePtr.write(Statement)
                 else:
-                    Statement = '%.17f\n'%(Points[LastPtIndex]+random.gauss(0,.00025))
+                    Statement = '%.47f\n'%(Points[LastPtIndex]+random.gauss(0,.00025))
                     FilePtr.write(Statement)
             return      
         else:
@@ -211,16 +220,16 @@ class ErrorModelMaker:
             FilePtr.write(Statement)
             for i in range(self.GetN()):
                 if i <= LastPtIndex and self.GetVariation() == False:
-                    Statement = '%.17f\n'%Points[i]
+                    Statement = '%.47f\n'%Points[i]
                     FilePtr.write(Statement)
                 elif i <= LastPtIndex and self.GetVariation() == True:
-                    Statement = '%.17f\n'%(Points[i] + random.gauss(0,.00025))
+                    Statement = '%.47f\n'%(Points[i] + random.gauss(0,.00025))
                     FilePtr.write(Statement)
                 elif i >= LastPtIndex and self.GetVariation() == False:
-                    Statement = '%.17f\n'%Points[LastPtIndex]
+                    Statement = '%.47f\n'%Points[LastPtIndex]
                     FilePtr.write(Statement)
                 else:
-                    Statement = '%.17f\n'%(Points[LastPtIndex]+random.gauss(0,.00025))
+                    Statement = '%.47f\n'%(Points[LastPtIndex]+random.gauss(0,.00025))
                     FilePtr.write(Statement)
             return      
         else:
