@@ -3,8 +3,22 @@ from FastaSequence import fasta_read
 from Logger import Logger
 class MetasimPy:
     CurrentDirectory = os.getcwd()
-    DEBUG = True
-    def __init__(self,OutputDirectory = 'MetaSimOutputs', LogObject = None, KMER_Length = 100, FirstReadFile = None, SecondReadFile = None, EmpiricalPEProbability = 100, EmpiricalRead1Mid2End = True, EmpiricalRead2Mid2End = True, NumOfThreads = multiprocessing.cpu_count(), FastaFile = None, ExpectedCoverage=30, Mean = 100,Sigma = 10,FragmentDistribution = 'gaussian',NumOfReads = None ):
+    DEBUG = False
+    def __init__(self,OutputDirectory = 'MetaSimOutputs', 
+                 LogObject = None, 
+                 KMER_Length = 100, 
+                 FirstReadFile = None, 
+                 SecondReadFile = None, 
+                 EmpiricalPEProbability = 100, 
+                 EmpiricalRead1Mid2End = True, 
+                 EmpiricalRead2Mid2End = True, 
+                 NumOfThreads = multiprocessing.cpu_count(), 
+                 FastaFile = None, 
+                 ExpectedCoverage=30, 
+                 Mean = 100,
+                 Sigma = 10,
+                 FragmentDistribution = 'gaussian',
+                 NumOfReads = None ):
         """
         Inputs:
         LogObject = a Logger class that is specified.
@@ -59,7 +73,6 @@ class MetasimPy:
                 self.FragmentDistribution = self.CurrentDirectory + '/' + FD #Change relative file location to exact file location
         else:
             self.FragmentDistribution = FD
-        #self.FragmentDistribution = FD
     def SetMean(self,AVG):
         self.Mean = AVG
     def SetSigma(self,Sigma):
@@ -166,7 +179,16 @@ class MetasimPy:
         7) -t stddev 
         8) Fast File
         """
-        Options = ['MetaSim', 'cmd']
+        if 'Darwin' in os.uname():
+            """
+            This is for compatability with the BIO Lab
+            """
+            Options = ['/usr/local/genome/bin/MetaSim','cmd']
+        else:
+            """
+            This is for compatability for generic linux distros
+            """
+            Options = ['MetaSim', 'cmd']
         #1) Number of reads
         Options.append('-r')
         Options.append(str(self.GetNumOfReads()))

@@ -32,12 +32,12 @@ from ErrorModelMaker import ErrorModelMaker
 #Build Error Model
 #Need to develop Error File Name
 for i in KMER_Lengths:
-    #FileName1 = "ErrorModels/ErrorModel-%d-bp.mconf"%i
-    #FileName2 = "ErrorModels/ModifiedErrorModel-%d-bp.mconf"%i
-    FileName1 = "ErrorModels/EMTest-%d-bp.mconf"%i
+    FileName1 = "ErrorModels/ErrorModel-%d-bp.mconf"%i
+    FileName2 = "ErrorModels/ModifiedErrorModel-%d-bp.mconf"%i
+    #FileName1 = "ErrorModels/EMTest-%d-bp.mconf"%i
     #FileName2 = "ErrorModels/VaryEMTest-%d-bp.mconf"%i
     BasicError = ErrorModelMaker(FileName = FileName1)
-    #VaryError = ErrorModelMaker(Variation = True, FileName=FileName2)
+    VaryError = ErrorModelMaker(Variation = True, FileName=FileName2)
 #SizeDistribution
 """
         Inputs:
@@ -101,6 +101,7 @@ for filename in FastaFileList:
                 NOR = FastaSeqSize * X / K  #Number of Reads
                 KMER_Length = K
                 ErrorModel = "ErrorModels/ErrorModel-%d-bp.mconf"%K
+                #ErrorModel = "ErrorModels/EMTest-%d-bp.mconf"%K
                 FirstReadFile = ErrorModel
                 SecondReadFile = ErrorModel
                 EmpiricalPEProbability = 100
