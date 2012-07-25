@@ -3,7 +3,7 @@ from FastaSequence import fasta_read
 from Logger import Logger
 class MetasimPy:
     CurrentDirectory = os.getcwd()
-    DEBUG = False
+    DEBUG = True
     def __init__(self,OutputDirectory = 'MetaSimOutputs', 
                  LogObject = None, 
                  KMER_Length = 100, 
@@ -218,68 +218,14 @@ class MetasimPy:
         #8)  Set Distribution Size
         Options.append('-w')
         Options.append(self.GetFragmentDistribution()) 
+        #8.25) Set Threads
+        Options.append('--threads')
+        Options.append(str(self.GetNumOfThreads()))
         #8.5) Fast File
         Options.append(self.GetFastaFile()) 
         #9) Set  commands
         self.SetMetaSimCommand(Options)     
-          
-#        if self.GetEmpiricalRead1Mid2End():
-#            #Options += '--empirical-read1-mid2end '
-#            Options.append('--empirical-read1-mid2end')
-#        if self.GetEmpiricalRead2Mid2End():
-#            #Options += '--empirical-read2-mid2end '
-#            Options.append('--empirical-read2-mid2end')
-#        #Options += '--threads %s '%self.GetNumOfThreads()
-#        Options.append('--threads')
-#        Options.append(str(self.GetNumOfThreads()))
-#        if self.GetFragmentDistribution() == 'uniform':
-#            #Options += '-v '
-#            Options.append('-v')
-#        elif self.GetFragmentDistribution()== 'gaussian':
-#            self.SetFragmentDistribution(self.GetFragmentDistribution())
-#        else:
-#            #Options += '-w %s '%self.GetFragmentDistribution()
-#            Options.append('-w')
-#            Options.append(self.GetFragmentDistribution())
-#        #OutputDirectory
-#        Options.append
-#        Options.append(self.GetOutputDirectory())
-
         
-        
-        
-#        Options  = 'MetaSim cmd -m '
-#        """
-#        1) Number of Reads
-#        2) KMER Length
-#        3) sigma
-#        4) Fasta File
-#        5) check Second Fasta File
-#        6) PePprobability
-#        7) Check Read1 mid2end & check Read2 mid2end
-#        8) NumOfThreads
-#        9) FragmentDistribution
-#        """
-#        Options += '-r %s '%self.GetNumOfReads()
-#        Options += '-f %d '%self.GetKMER_Length()
-#        Options += '-t %d '%self.GetSigma()
-#        Options += '-g %s '%self.GetFirstReadFile()
-#        if self.GetSecondReadFile() != None:
-#            Options += '-2 %s '%self.GetSecondReadFile()
-#            Options += '--empirical-pe-probability %d '%self.GetEmpiricalPEProbability()
-#        if self.GetEmpiricalRead1Mid2End():
-#            Options += '--empirical-read1-mid2end '
-#        if self.GetEmpiricalRead2Mid2End():
-#            Options += '--empirical-read2-mid2end '
-#        Options += '--threads %s '%self.GetNumOfThreads()
-#        if self.GetFragmentDistribution() == 'uniform':
-#            Options += '-v '
-#        elif self.GetFragmentDistribution()== 'gaussian':
-#            self.SetFragmentDistribution(self.GetFragmentDistribution())
-#        else:
-#            Options += '-w %s '%self.GetFragmentDistribution()
-#        Options += '%s'%self.GetFastaFile()
-#        self.SetMetaSimCommand(Options)
     
     def RunStatement(self):
         if self.DEBUG:

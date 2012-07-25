@@ -32,7 +32,7 @@ def MCONFBuilder(KMER_Lengths):
         FileName2 = "ErrorModels/ModifiedErrorModel-%d-bp.mconf"%i
         #FileName1 = "ErrorModels/EMTest-%d-bp.mconf"%i
         #FileName2 = "ErrorModels/VaryEMTest-%d-bp.mconf"%i
-        BasicError = ErrorModelMaker(FileName = FileName1)
+        BasicError = ErrorModelMaker(FileName = FileName1,N=i)
         VaryError = ErrorModelMaker(Variation = True, FileName=FileName2)
 
 def SizeDistroBuilder(KMER_Lengths,NumOfReads):
@@ -45,7 +45,6 @@ def SizeDistroBuilder(KMER_Lengths,NumOfReads):
             Objective of class: return a distribution file
     """
     Sigma = [i for i in range(8,15)]
-    #Sigma.append(0)
     Mean = KMER_Lengths
     for i in Sigma:
         for j in Mean:
@@ -82,7 +81,7 @@ def MetaSimulator(FastaFileList,ExpectedCoverages,KMER_Lengths,Sigma,FastaSequen
     2)set metasimpy settings
     3)hope for results
     """
-    Dbug = debug or True
+    Dbug = debug
     if Dbug:
         return LincolnLog
     else:
@@ -126,7 +125,7 @@ def MetaSimulator(FastaFileList,ExpectedCoverages,KMER_Lengths,Sigma,FastaSequen
                                   NumOfReads = NOR)
         return LincolnLog
 
-def VelvetSimulator(LincolnLog,Sigma,FastaSequenceList, Time,debug=None):
+def VelvetSimulator(LincolnLog,Sigma,FastaSequenceList, Time, ExpectedCoverage, KMER_Lengths, debug=None):
     Dbug = debug or False
     #VelvetH
     """
@@ -139,10 +138,8 @@ def VelvetSimulator(LincolnLog,Sigma,FastaSequenceList, Time,debug=None):
     #from VelvetH import VelvetH
     FNA_List= glob.glob('MetaSimOutputs/*.fna')#find all files of this format and remove the time hash and .fna
     FNA_NameList= [ i[15:] for i in FNA_List]
-    MinContigs = [300, 400, 500]
+    MinContigs = [50,300, 400, 500]
     VelvetHOutput = []
-    ExpectedCoverage = [10]#TestingMode
-    KMER_Lengths = [99]         #TestingMode
     """./velveth output_directory hash_length [[-file_format][-read_type] filename]
     1) make output directory from FNA_NameList, KMER, MinContig
     2) velveth
@@ -170,7 +167,7 @@ def VelvetSimulator(LincolnLog,Sigma,FastaSequenceList, Time,debug=None):
                             subprocess.call(VelvetFolderOutput,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
                             #VelvetH
                             FNAFile = CurrentDirectory + FNA_List[i]
-                            VelvetHOutput = ['velveth', FolderName1, '%d'%KMER_Lengths[j], '-fasta', '-shortPaired', FNAFile] 
+                            VelvetHOutput = ['/usr/local/genome/bin/velveth', FolderName1, '%d'%KMER_Lengths[j], '-fasta', '-shortPaired', FNAFile] 
                             subprocess.call(VelvetHOutput,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
                             #Make Directory with date
                             FolderName2 = CurrentDirectory + 'VelvetOutputs/%s-%s-%dKMER-%dXC-%dMC'%(Time,FNA_NameList[i],KMER_Lengths[j],ExpectedCoverage[XP],MinContigs[k])
@@ -188,7 +185,7 @@ def VelvetSimulator(LincolnLog,Sigma,FastaSequenceList, Time,debug=None):
                             subprocess.call(SymbolicLink2,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
                             #VelvetG
                             ExpectedCov = ExpectedCoverage[XP]
-                            Velvet = ['velvetg',FolderName2, '-cov_cutoff', '4', '-exp_cov', '%d'%ExpectedCov, '-min_contig_lgth', '%d'%MinContigs[k]]
+                            Velvet = ['/usr/local/genome/bin/velvetg',FolderName2, '-cov_cutoff', '4', '-exp_cov', '%d'%ExpectedCov, '-min_contig_lgth', '%d'%MinContigs[k]]
                             subprocess.call(Velvet,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
                     else:
                         if not os.path.exists(FolderName1):
@@ -210,20 +207,6 @@ def VelvetSimulator(LincolnLog,Sigma,FastaSequenceList, Time,debug=None):
                             os.system(SymbolicLink1)
                             os.system(SymbolicLink2)
                             os.system(VelvetGOutput)
-                            
-                            
-    ##VelvetG
-    #"""
-    #        (required) OutputFolder = Output Directory of DeBruijn Graph Results
-    #        CoverageCutoff = Minimum amount of times a base pair is sequenced
-    #        MinContigLength = The smallest continuous sequenced length output desired
-    #        ExpCov = The expected coverage of times a base pair is sequenced 
-    #        MaxCov = the largest amount of times a base pair is sequenced
-    #        (requires pairs ends option in velveth) InsertLength =  To activate the use of read pairs, you must specify two parameters: the
-    #                                                                expected (i.e. average) insert length (or at least a rough estimate), and the
-    #                                                                expected short-read k-mer coverage (see 5.1 for more information)
-    #"""
-    #from VelvetG import VelvetG
     LincolnLog.ErrorLog.close()
     LincolnLog.InputLog.close()
     LincolnLog.OutputLog.close()
@@ -231,5 +214,5 @@ def VelvetSimulator(LincolnLog,Sigma,FastaSequenceList, Time,debug=None):
 ExpectedCoverages, KMER_Lengths, NumOfReads, FastaSizeList, FastaFileList, FastaSequenceList, CurrentDirectory, Time = FileReader()
 MCONFBuilder(KMER_Lengths)
 Sigma = SizeDistroBuilder(KMER_Lengths,NumOfReads)
-LincolnLog = MetaSimulator(FastaFileList,ExpectedCoverages,KMER_Lengths,Sigma,FastaSequenceList, debug=True) #If we really, really, really want to build new MCONF Data, mark debug to false
-VelvetSimulator(LincolnLog,Sigma,FastaSequenceList, Time,debug=True) #if we really really want to use the subprocess.call, mark debug to false
+LincolnLog = MetaSimulator(FastaFileList,ExpectedCoverages,KMER_Lengths,Sigma,FastaSequenceList, debug=True) #If we really, really, really want to build new FNA Data, mark debug to false
+VelvetSimulator(LincolnLog,Sigma,FastaSequenceList, Time,ExpectedCoverages,KMER_Lengths,debug=False) #if we really really want to use the subprocess.call, mark debug to false

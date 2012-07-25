@@ -153,29 +153,6 @@ class ErrorModelMaker:
         else:
             return
     def BuildInsertionErrors(self,FilePtr):
-#        Points = self.GetInsertionPoints()
-#        LastPtIndex = len(Points)-1
-#        if self.GetBuildInsertion() == True:
-#            Statement = '# Set Insertion Rates\n'
-#            FilePtr.write(Statement)
-#            Statement = 'INSERTION_ERROR\n'
-#            FilePtr.write(Statement)
-#            for i in range(self.GetN()):
-#                if i <= LastPtIndex and self.GetVariation() == False:
-#                    Statement = '%.47f\n'%Points[i]
-#                    FilePtr.write(Statement)
-#                elif i <= LastPtIndex and self.GetVariation() == True:
-#                    Statement = '%.47f\n'%(Points[i] + random.gauss(0,.00025))
-#                    FilePtr.write(Statement)
-#                elif i >= LastPtIndex and self.GetVariation() == False:
-#                    Statement = '%.47f\n'%Points[LastPtIndex]
-#                    FilePtr.write(Statement)
-#                else:
-#                    Statement = '%.47f\n'%(Points[LastPtIndex]+random.gauss(0,.00025))
-#                    FilePtr.write(Statement)
-#            return      
-#        else:
-#            return
         if self.GetBuildSubstitution() == True:
             Points = self.GetInsertionPoints()
             LastPtIndex = len(Points)-1
@@ -202,29 +179,6 @@ class ErrorModelMaker:
         else:
             return
     def BuildDeletionErrors(self,FilePtr):
-#        Points = self.GetDeletionPoints()
-#        LastPtIndex = len(Points)-1
-#        if self.GetBuildDeletion() == True:
-#            Statement = '# Set Deletion Rates \n'
-#            FilePtr.write(Statement)
-#            Statement = 'DELETION_ERROR\n'
-#            FilePtr.write(Statement)
-#            for i in range(self.GetN()):
-#                if i <= LastPtIndex and self.GetVariation() == False:
-#                    Statement = '%.47f\n'%Points[i]
-#                    FilePtr.write(Statement)
-#                elif i <= LastPtIndex and self.GetVariation() == True:
-#                    Statement = '%.47f\n'%(Points[i] + random.gauss(0,.00025))
-#                    FilePtr.write(Statement)
-#                elif i >= LastPtIndex and self.GetVariation() == False:
-#                    Statement = '%.47f\n'%Points[LastPtIndex]
-#                    FilePtr.write(Statement)
-#                else:
-#                    Statement = '%.47f\n'%(Points[LastPtIndex]+random.gauss(0,.00025))
-#                    FilePtr.write(Statement)
-#            return      
-#        else:
-#            return
         if self.GetBuildDeletion() == True:
             Points = self.GetDeletionPoints()
             LastPtIndex = len(Points)-1
