@@ -3,7 +3,29 @@ from ErrorModelMaker import ErrorModelMaker
 from DistributionMaker import SizeDistribution
 from MetasimPy import MetasimPy
 from Logger import Logger
-import glob, FastaSequence, os, subprocess, datetime
+import glob, FastaSequence, os, subprocess, datetime, platform, sets
+
+def SystemCheck():
+    CurrentDirectory = os.getcwd() + '/'
+    MetaSimDir = CurrentDirectory + 'MetaSimOutputs'
+    MCONFDir = CurrentDirectory + 'MCONF'
+    FastaFilesDir = CurrentDirectory + 'FastaFiles'
+    ErrorModelsDir = CurrentDirectory + 'ErrorModels'
+    DistributionModelsDir = CurrentDirectory + 'DistributionModels'
+    Strings = [MetaSimDir,MCONFDir,FastaFilesDir,ErrorModelsDir,DistributionModelsDir]
+    for text in Strings:
+        if not os.path.isdir(text):
+            os.system('mkdir '+text)
+    #check velvet Installation
+    pform = platform.uname()
+    if 'Linux' in pform:
+        Velveth = '/usr/local/bin/velveth'
+        Velvetg = '/usr/local/bin/velvetg'
+    else:
+        Velveth = '/usr/local/genome/bin/velveth'
+        Velvetg = '/usr/local/genome/bin/velvetg'
+    return Velveth, Velvetg, MetaSimDir, MCONFDir, FastaFilesDir, ErrorModelsDir, DistributionModelsDir
+
 def FileReader():
     CurrentDirectory = os.getcwd() + '/'
     now = datetime.datetime.now()
@@ -53,7 +75,7 @@ def SizeDistroBuilder(KMER_Lengths,NumOfReads):
                 SizeDistribution(Sigma = i, Mean = j, NumOfReads = k,FileName=FileName)
     return Sigma
 
-def MetaSimulator(FastaFileList,ExpectedCoverages,KMER_Lengths,Sigma,FastaSequenceList,debug=None):
+def MetaSimulator(MetaSimDir,InsertLengths,FastaFileList,ExpectedCoverages,KMER_Lengths,Sigma,FastaSequenceList,debug=None):
     #MetaSimpy
     """
     Inputs:
@@ -74,13 +96,12 @@ def MetaSimulator(FastaFileList,ExpectedCoverages,KMER_Lengths,Sigma,FastaSequen
     """
     LincolnLog = Logger()
     LincolnLog.BuildLogFiles()
-    """
-    Needs to do the following
-    for each fasta file, for each expected coverage, for each mean, for each sigma:
-    1)Get the number of reads from files
-    2)set metasimpy settings
-    3)hope for results
-    """
+#    Needs to do the following
+#    for each fasta file, for each expected coverage, for each mean, for each sigma:
+#    1)Get the number of reads from files
+#    2)set metasimpy settings
+    CurrentWorkingDirectory = os.getcwd()
+    FNAFileSet = set(list())
     Dbug = debug
     if Dbug:
         return LincolnLog
@@ -89,44 +110,59 @@ def MetaSimulator(FastaFileList,ExpectedCoverages,KMER_Lengths,Sigma,FastaSequen
             for X in ExpectedCoverages:
                 for K in KMER_Lengths:
                     for apple in Sigma:
-                        """
-                        for i in FastaSizeList:
-                            for j in ExpectedCoverages:
-                                for k in KMER_Lengths:
-                                    NumOfReads.append( i * j / k )
-                        """
-                        FastaSeq = fasta_read(filename)
-                        FastaSeqSize = len(FastaSequenceList[0].GetSeq())
-                        NOR = FastaSeqSize * X / K  #Number of Reads
-                        KMER_Length = K
-                        ErrorModel = "ErrorModels/ErrorModel-%d-bp.mconf"%K
-                        #ErrorModel = "ErrorModels/EMTest-%d-bp.mconf"%K
-                        FirstReadFile = ErrorModel
-                        SecondReadFile = ErrorModel
-                        EmpiricalPEProbability = 100
-                        EmpiricalRead1Mid2End = True
-                        EmpiricalRead2Mid2End = True
-                        FastaFile = filename
-                        ExpectedCoverage = X
-                        Mean = K
-                        FragmenDistribution = "DistributionModels/DistributionModel%dSig%dMu%dNOR.txt"%(apple,K,NOR)
-                        MetasimPy(LogObject = LincolnLog, 
-                                  KMER_Length = KMER_Length,
-                                  FirstReadFile = FirstReadFile,
-                                  SecondReadFile = SecondReadFile,
-                                  EmpiricalPEProbability = EmpiricalPEProbability,
-                                  EmpiricalRead1Mid2End = EmpiricalRead1Mid2End,
-                                  EmpiricalRead2Mid2End = EmpiricalRead2Mid2End,
-                                  FastaFile = FastaFile,
-                                  ExpectedCoverage = ExpectedCoverage,
-                                  Mean = Mean,
-                                  Sigma = apple,
-                                  FragmentDistribution = FragmenDistribution,
-                                  NumOfReads = NOR)
+                        for INS in InsertLengths:
+                            """
+                            for i in FastaSizeList:
+                                for j in ExpectedCoverages:
+                                    for k in KMER_Lengths:
+                                        NumOfReads.append( i * j / k )
+                            """
+                            FastaSeq = fasta_read(filename)
+                            FastaSeqSize = len(FastaSequenceList[0].GetSeq())
+                            NOR = FastaSeqSize * X / K  #Number of Reads
+                            KMER_Length = K
+                            ErrorModel = "ErrorModels/ErrorModel-%d-bp.mconf"%K
+                            #ErrorModel = "ErrorModels/EMTest-%d-bp.mconf"%K
+                            FirstReadFile = ErrorModel
+                            SecondReadFile = ErrorModel
+                            EmpiricalPEProbability = 100
+                            EmpiricalRead1Mid2End = True
+                            EmpiricalRead2Mid2End = True
+                            FastaFile = filename
+                            ExpectedCoverage = X
+                            Mean = K
+                            InsertLengthDistribution = "DistributionModels/DistributionModel%dSig%dMu%dNOR.txt"%(apple,INS,NOR)
+                            OutputDir = CurrentWorkingDirectory + '/MetaSimOutputs' 
+                            MetasimPy(OutputDirectory=OutputDir,
+                                      LogObject = LincolnLog, 
+                                      KMER_Length = KMER_Length,
+                                      FirstReadFile = FirstReadFile,
+                                      SecondReadFile = SecondReadFile,
+                                      EmpiricalPEProbability = EmpiricalPEProbability,
+                                      EmpiricalRead1Mid2End = EmpiricalRead1Mid2End,
+                                      EmpiricalRead2Mid2End = EmpiricalRead2Mid2End,
+                                      FastaFile = FastaFile,
+                                      ExpectedCoverage = ExpectedCoverage,
+                                      Mean = Mean,
+                                      Sigma = apple,
+                                      FragmentDistribution = InsertLengthDistribution,
+                                      NumOfReads = NOR)
+                            #Find the corresponding FNA File made by MetasimPy command
+                            MetaSimFiles = MetaSimDir + '*.fna'
+                            SetOfFNAFiles = set(glob.glob(MetaSimFiles))
+                            FNADifference = SetOfFNAFiles - FNAFileSet
+                            FNAFile = FNADifference.pop()
+                            VelvetCommander(FNAFile,INS,apple,ExpectedCoverage)
         return LincolnLog
 
-def VelvetSimulator(LincolnLog,Sigma,FastaSequenceList, Time, ExpectedCoverage, KMER_Lengths, debug=None):
-    Dbug = debug or False
+def VelvetSimulator(InsertsLengths,LincolnLog,Sigma,FastaSequenceList, Time, ExpectedCoverage, KMER_Lengths, debug=None): 
+    pform = platform.uname()
+    if 'Linux' in pform:
+        Velveth = '/usr/local/bin/velveth'
+        Velvetg = '/usr/local/bin/velvetg'
+    else:
+        Velveth = '/usr/local/genome/bin/velveth'
+        Velvetg = '/usr/local/genome/bin/velvetg'
     #VelvetH
     """
     (Required) FileName      = None
@@ -148,6 +184,7 @@ def VelvetSimulator(LincolnLog,Sigma,FastaSequenceList, Time, ExpectedCoverage, 
         for j in range(len(KMER_Lengths)):
             for k in range(len(MinContigs)):
                 for XP in range(len(ExpectedCoverage)):
+                    for h,INS in enumerate(InsertsLengths):
                     """
                     DATE=`date +%m%d%H%M%S`
                     mkdir $1_KMER$2_CUT$3_EXP$4_CNTG$5
@@ -161,13 +198,13 @@ def VelvetSimulator(LincolnLog,Sigma,FastaSequenceList, Time, ExpectedCoverage, 
                     """
                     #1)Make Directory
                     FolderName1 = CurrentDirectory + 'VelvetOutputs/%s-%dKMER-%dXC-%dMC'%(FNA_NameList[i],KMER_Lengths[j],ExpectedCoverage[XP],MinContigs[k])
-                    if not Dbug:
+                    if not debug:
                         if not os.path.exists(FolderName1):
                             VelvetFolderOutput = ['mkdir', FolderName1]
                             subprocess.call(VelvetFolderOutput,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
                             #VelvetH
                             FNAFile = CurrentDirectory + FNA_List[i]
-                            VelvetHOutput = ['/usr/local/genome/bin/velveth', FolderName1, '%d'%KMER_Lengths[j], '-fasta', '-shortPaired', FNAFile] 
+                            VelvetHOutput = [Velveth, FolderName1, '%d' % KMER_Lengths[j], '-fasta', '-shortPaired', FNAFile] 
                             subprocess.call(VelvetHOutput,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
                             #Make Directory with date
                             FolderName2 = CurrentDirectory + 'VelvetOutputs/%s-%s-%dKMER-%dXC-%dMC'%(Time,FNA_NameList[i],KMER_Lengths[j],ExpectedCoverage[XP],MinContigs[k])
@@ -185,7 +222,7 @@ def VelvetSimulator(LincolnLog,Sigma,FastaSequenceList, Time, ExpectedCoverage, 
                             subprocess.call(SymbolicLink2,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
                             #VelvetG
                             ExpectedCov = ExpectedCoverage[XP]
-                            Velvet = ['/usr/local/genome/bin/velvetg',FolderName2, '-cov_cutoff', '4', '-exp_cov', '%d'%ExpectedCov, '-min_contig_lgth', '%d'%MinContigs[k]]
+                            Velvet = [Velvetg ,FolderName2, '-cov_cutoff', '4', '-exp_cov', '%d'%ExpectedCov, '-min_contig_lgth', '%d'%MinContigs[k]]
                             subprocess.call(Velvet,stdin=LincolnLog.InputLog,stderr=LincolnLog.ErrorLog,stdout=LincolnLog.OutputLog)
                     else:
                         if not os.path.exists(FolderName1):
@@ -197,10 +234,10 @@ def VelvetSimulator(LincolnLog,Sigma,FastaSequenceList, Time, ExpectedCoverage, 
                             LinkedRoadmaps          = FolderName2 + '/Roadmaps'
                             FolderOutput1           = 'mkdir %s'%FolderName1
                             FolderOutput2           = 'mkdir %s'%FolderName2
-                            VelvetHOutput           = '/usr/local/genome/bin/velveth %s %d -fasta -shortPaired %s'%(FolderName1,KM,FNAFile)
+                            VelvetHOutput           = '%s %s %d -fasta -shortPaired %s'%(Velveth, FolderName1,KM,FNAFile)
                             SymbolicLink1           = 'ln -s %s %s'%(ActualSeq,LinkedSeq)
                             SymbolicLink2           = 'ln -s %s %s'%(ActualRoadmaps,LinkedRoadmaps)
-                            VelvetGOutput           = '/usr/local/genome/bin/velvetg %s -cov_cutoff 4 -exp_cov %d -min_contig_lgth %d'%(FolderName2,EC,MC)
+                            VelvetGOutput           = '%s %s -cov_cutoff 4 -exp_cov %d -min_contig_lgth %d'%(Velvetg,FolderName2,EC,MC)
                             os.system(FolderOutput1)
                             os.system(FolderOutput2)
                             os.system(VelvetHOutput)
@@ -211,8 +248,10 @@ def VelvetSimulator(LincolnLog,Sigma,FastaSequenceList, Time, ExpectedCoverage, 
     LincolnLog.InputLog.close()
     LincolnLog.OutputLog.close()
 
+Velveth, Velvetg, MetaSimDir, MCONFDir, FastaFilesDir, ErrorModelsDir, DistributionModelsDir = SystemCheck()
 ExpectedCoverages, KMER_Lengths, NumOfReads, FastaSizeList, FastaFileList, FastaSequenceList, CurrentDirectory, Time = FileReader()
 MCONFBuilder(KMER_Lengths)
-Sigma = SizeDistroBuilder(KMER_Lengths,NumOfReads)
-LincolnLog = MetaSimulator(FastaFileList,ExpectedCoverages,KMER_Lengths,Sigma,FastaSequenceList, debug=True) #If we really, really, really want to build new FNA Data, mark debug to false
-VelvetSimulator(LincolnLog,Sigma,FastaSequenceList, Time,ExpectedCoverages,KMER_Lengths,debug=False) #if we really really want to use the subprocess.call, mark debug to false
+InsertsLengths = [300]
+Sigma = SizeDistroBuilder(InsertsLengths,NumOfReads)
+LincolnLog = MetaSimulator(MetaSimDir,InsertsLengths,FastaFileList,ExpectedCoverages,KMER_Lengths,Sigma,FastaSequenceList, debug=True) #If we really, really, really want to build new FNA Data, mark debug to false
+VelvetSimulator(InsertsLengths,LincolnLog,Sigma,FastaSequenceList, Time,ExpectedCoverages,KMER_Lengths,debug=False) #if we really really want to use the subprocess.call, mark debug to false
