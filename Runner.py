@@ -155,6 +155,9 @@ def MetaSimulator(MetaSimDir,InsertLengths,FastaFileList,ExpectedCoverages,KMER_
                             VelvetCommander(FNAFile,INS,apple,ExpectedCoverage)
         return LincolnLog
 
+def VelvetCommander(FNAFile,INS,apple,ExpectedCoverage):
+    MinContigs = [50,300, 400, 500]
+    
 def VelvetSimulator(InsertsLengths,LincolnLog,Sigma,FastaSequenceList, Time, ExpectedCoverage, KMER_Lengths, debug=None): 
     pform = platform.uname()
     if 'Linux' in pform:
