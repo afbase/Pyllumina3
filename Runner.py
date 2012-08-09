@@ -12,7 +12,9 @@ def SystemCheck():
     FastaFilesDir = CurrentDirectory + 'FastaFiles'
     ErrorModelsDir = CurrentDirectory + 'ErrorModels'
     DistributionModelsDir = CurrentDirectory + 'DistributionModels'
-    Strings = [MetaSimDir,MCONFDir,FastaFilesDir,ErrorModelsDir,DistributionModelsDir]
+    VelvetDir = CurrentDirectory + 'VelvetOutputs'
+    Logs = CurrentDirectory + 'LogFiles'
+    Strings = [Logs,VelvetDir,MetaSimDir,MCONFDir,FastaFilesDir,ErrorModelsDir,DistributionModelsDir]
     for text in Strings:
         if not os.path.isdir(text):
             os.system('mkdir '+text)
@@ -75,7 +77,7 @@ def SizeDistroBuilder(KMER_Lengths,NumOfReads):
                 SizeDistribution(Sigma = i, Mean = j, NumOfReads = k,FileName=FileName)
     return Sigma
 
-def MetaSimulator(MetaSimDir,InsertLengths,FastaFileList,ExpectedCoverages,KMER_Lengths,Sigma,FastaSequenceList,debug=None):
+def MetaSimulator(Time,MetaSimDir,InsertLengths,FastaFileList,ExpectedCoverages,KMER_Lengths,Sigma,FastaSequenceList,debug=None):
     #MetaSimpy
     """
     Inputs:
@@ -152,11 +154,30 @@ def MetaSimulator(MetaSimDir,InsertLengths,FastaFileList,ExpectedCoverages,KMER_
                             SetOfFNAFiles = set(glob.glob(MetaSimFiles))
                             FNADifference = SetOfFNAFiles - FNAFileSet
                             FNAFile = FNADifference.pop()
-                            VelvetCommander(FNAFile,INS,apple,ExpectedCoverage)
+                            VelvetCommander(KMER_Length,Time,FNAFile,INS,apple,ExpectedCoverage,LincolnLog)
         return LincolnLog
 
-def VelvetCommander(FNAFile,INS,apple,ExpectedCoverage):
-    MinContigs = [50,300, 400, 500]
+def VelvetCommander(KMER_Length,Time,FNAFile,INS,apple,ExpectedCoverage,LincolnLog):
+    CurrentDirectory = os.getcwd() + '/'
+    MinContigs = [50, 300, 400, 500]
+    CovCutoff  = [4,5,6]
+    for i,MC in enumerate(MinContigs):
+        for j,CC in enumerate(CovCutoff):
+            FolderName1             = CurrentDirectory + 'VelvetOutputs/%s-%dKMER-%dXC-%dMC-%dCC-%dINS-%Sig'%(FNAFile[0:-4],KMER_Lengths,ExpectedCoverage,MC,CC,INS,apple)
+            FolderName2             = CurrentDirectory + 'VelvetOutputs/%s-%s-%dKMER-%dXC-%dMC-%dCC-%dINS-%Sig'%(Time,FNAFile[0:-4],KMER_Length,ExpectedCoverage,MC,CC,INS,apple)
+            ActualSeq               = FolderName1 + '/Sequences'
+            LinkedSeq               = FolderName2 + '/Sequences'
+            ActualRoadmaps          = FolderName1 + '/Roadmaps'
+            LinkedRoadmaps          = FolderName2 + '/Roadmaps'
+            FolderOutput1           = ['mkdir', '%s'%FolderName1]
+            FolderOutput2           = ['mkdir', '%s'%FolderName2]
+            VelvetHOutput           = [Velveth, FolderName1,KMER_Length, '-fasta', '-shortPaired', FNAFile]
+            SymbolicLink1           = ['ln' ,'-s', ActualSeq,LinkedSeq]
+            SymbolicLink2           = ['ln' ,'-s',ActualRoadmaps,LinkedRoadmaps]
+            #VelvetGOutput          = '%s %s -cov_cutoff 4 -exp_cov %d -min_contig_lgth %d'%(Velvetg,FolderName2,EC,MC)
+            VelvetGOutput           = [Velvetg, FolderName2,'-cov_cutoff',CC,'-exp_cov',ExpectedCoverage,'-min_contig_lgth',MC,'-ins_length',INS, '-ins_length_sd',apple]
+            CommandList             = [FolderOutput1,FolderOutput2,VelvetHOutput,SymbolicLink1,SymbolicLink2,VelvetGOutput]
+            
     
 def VelvetSimulator(InsertsLengths,LincolnLog,Sigma,FastaSequenceList, Time, ExpectedCoverage, KMER_Lengths, debug=None): 
     pform = platform.uname()
@@ -256,5 +277,5 @@ ExpectedCoverages, KMER_Lengths, NumOfReads, FastaSizeList, FastaFileList, Fasta
 MCONFBuilder(KMER_Lengths)
 InsertsLengths = [300]
 Sigma = SizeDistroBuilder(InsertsLengths,NumOfReads)
-LincolnLog = MetaSimulator(MetaSimDir,InsertsLengths,FastaFileList,ExpectedCoverages,KMER_Lengths,Sigma,FastaSequenceList, debug=True) #If we really, really, really want to build new FNA Data, mark debug to false
+LincolnLog = MetaSimulator(Time,MetaSimDir,InsertsLengths,FastaFileList,ExpectedCoverages,KMER_Lengths,Sigma,FastaSequenceList, debug=True) #If we really, really, really want to build new FNA Data, mark debug to false
 VelvetSimulator(InsertsLengths,LincolnLog,Sigma,FastaSequenceList, Time,ExpectedCoverages,KMER_Lengths,debug=False) #if we really really want to use the subprocess.call, mark debug to false
