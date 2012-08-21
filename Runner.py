@@ -3,10 +3,11 @@ from ErrorModelMaker import ErrorModelMaker
 from DistributionMaker import SizeDistribution
 from MetasimPy import MetasimPy
 from Logger import Logger
-import glob, FastaSequence, os, subprocess, datetime, platform, sets
+import glob, FastaSequence, os, subprocess, datetime, platform, re
 
 def SystemCheck():
     CurrentDirectory = os.getcwd() + '/'
+    VelvetAnalysisDir = CurrentDirectory + 'VelvetAnalysis'
     MetaSimDir = CurrentDirectory + 'MetaSimOutputs'
     MCONFDir = CurrentDirectory + 'MCONF'
     FastaFilesDir = CurrentDirectory + 'FastaFiles'
@@ -14,7 +15,7 @@ def SystemCheck():
     DistributionModelsDir = CurrentDirectory + 'DistributionModels'
     VelvetDir = CurrentDirectory + 'VelvetOutputs'
     Logs = CurrentDirectory + 'LogFiles'
-    Strings = [Logs,VelvetDir,MetaSimDir,MCONFDir,FastaFilesDir,ErrorModelsDir,DistributionModelsDir]
+    Strings = [Logs,VelvetAnalysisDir , VelvetDir,MetaSimDir,MCONFDir,FastaFilesDir,ErrorModelsDir,DistributionModelsDir]
     for text in Strings:
         if not os.path.isdir(text):
             os.system('mkdir '+text)
@@ -26,7 +27,7 @@ def SystemCheck():
     else:
         Velveth = '/usr/local/genome/bin/velveth'
         Velvetg = '/usr/local/genome/bin/velvetg'
-    return Velveth, Velvetg, MetaSimDir, MCONFDir, FastaFilesDir, ErrorModelsDir, DistributionModelsDir
+    return VelvetAnalysisDir, Velveth, Velvetg, MetaSimDir, MCONFDir, FastaFilesDir, ErrorModelsDir, DistributionModelsDir
 
 def FileReader():
     CurrentDirectory = os.getcwd() + '/'
@@ -39,7 +40,8 @@ def FileReader():
     for filename in FastaFileList:
         FastaSequenceList = fasta_read(filename)
         FastaSizeList.append(len(FastaSequenceList[0].GetSeq()))
-    ExpectedCoverages = [i for i in range(30,51,5)]
+#    ExpectedCoverages = [i for i in range(30,51,5)]
+    ExpectedCoverages = [100,200,300,400,500]
     KMER_Lengths = [75]
     NumOfReads = list()
     for i in FastaSizeList:
@@ -77,7 +79,7 @@ def SizeDistroBuilder(KMER_Lengths,NumOfReads):
                 SizeDistribution(Sigma = i, Mean = j, NumOfReads = k,FileName=FileName)
     return Sigma
 
-def MetaSimulator(Time,MetaSimDir,InsertLengths,FastaFileList,ExpectedCoverages,KMER_Lengths,Sigma,debug=None):
+def MetaSimulator(VelvetAnalysisDir,Time,MetaSimDir,InsertLengths,FastaFileList,ExpectedCoverages,KMER_Lengths,Sigma,debug=None):
     #MetaSimpy
     """
     Inputs:
@@ -135,7 +137,8 @@ def MetaSimulator(Time,MetaSimDir,InsertLengths,FastaFileList,ExpectedCoverages,
                             Mean = K
                             InsertLengthDistribution = "DistributionModels/DistributionModel%dSig%dMu%dNOR.txt"%(apple,INS,NOR)
                             OutputDir = CurrentWorkingDirectory + '/MetaSimOutputs' 
-                            MetasimPy(OutputDirectory=OutputDir,
+                            MetasimPy(Mean = K,
+                                      OutputDirectory=OutputDir,
                                       LogObject = LincolnLog, 
                                       KMER_Length = KMER_Length                         ,
                                       FirstReadFile = FirstReadFile,
@@ -145,7 +148,6 @@ def MetaSimulator(Time,MetaSimDir,InsertLengths,FastaFileList,ExpectedCoverages,
                                       EmpiricalRead2Mid2End = EmpiricalRead2Mid2End,
                                       FastaFile = FastaFile,
                                       ExpectedCoverage = ExpectedCoverage,
-                                      Mean = Mean,
                                       Sigma = apple,
                                       FragmentDistribution = InsertLengthDistribution,
                                       NumOfReads = NOR)
@@ -155,8 +157,40 @@ def MetaSimulator(Time,MetaSimDir,InsertLengths,FastaFileList,ExpectedCoverages,
                             FNADifference = SetOfFNAFiles - FNAFileSet
                             FNAFile = FNADifference.pop()
                             VelvetCommander(31,Time,FNAFile,INS,apple,ExpectedCoverage,LincolnLog)
+            VelvetAnalysis(filename,VelvetAnalysisDir)
         return LincolnLog
+def VelvetAnalysis(FileName, VelvetAnalysisDir):
+    DataVectors = list()
+    Path,FNAname = os.path.split(FileName)
+    SpeciesName = FNAname[0:-6]
+    SpeciesLog = VelvetAnalysisDir+'/'+SpeciesName+'Analysis'
+    AnalysisFilePtr = open(SpeciesLog,'w')
+    AnalysisFilePtr.write('MaxContigLength,KMER,ExpectedCoverage,MinContig,CoverageCutoff,Insertlength,InsSigma,Nodes,N50,Max,UsedReads,TotalReads\n')
+    BasePath = Path[0:-11]
+    VelvetLogOutputs= BasePath + 'VelvetOutputs/*' + SpeciesName + '*/Log'
+    SpecieLogs = glob.glob(VelvetLogOutputs)
+    for i,Fname in enumerate(SpecieLogs):
+        #31KMER-35XC-500MC-4CC-300INS-9Sig
+        VelvetParams = re.findall('(\d+)KMER-(\d+)XC-(\d+)MC-(\d+)CC-(\d+)INS-(\d+)Sig',Fname)
+        if len(VelvetParams)>0:
+            KMER,ExpectedCoverage,MinContig,CoverageCutoff,Insertlength,InsSigma = VelvetParams[0][0], VelvetParams[0][1], VelvetParams[0][2], VelvetParams[0][3], VelvetParams[0][4], VelvetParams[0][5]  
+        FilePtr = open(Fname,'r')
+        Lines = FilePtr.readlines()
+        FilePtr.close()
+        if 'Final graph' in Lines[-1]:
+            M = re.findall('Final graph has (\d+) nodes and n50 of (\d+), max (\d+), total (\d+), using (\d+)/(\d+) reads', Lines[-1])
+            M = M[0]
+            #Max,KMER,ExpectedCoverage,MinContig,CoverageCutoff,Insertlength,InsSigma,Nodes,N50,Max,UsedReads,TotalReads
+            DataVectors.append((int(M[2]),int(KMER),int(ExpectedCoverage),int(MinContig),int(CoverageCutoff),int(Insertlength),int(InsSigma),int(M[0]),int(M[1]),int(M[3]),int(M[4]),int(M[5])))
+            #AnalysisFilePtr.write(Fname + '\n')
+    DataVectors.sort(reverse=True)
+    for K in DataVectors:
+        AnalysisFilePtr.write('%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n'%(K[0 ],K[1 ],K[2 ],K[3 ],K[4 ],K[5  ],K[6 ],K[7 ],K[8 ],K[9 ],K[10],K[11]))
+    AnalysisFilePtr.close()
+        
+        
 
+        
 def VelvetCommander(K,Time,FNAFile,INS,apple,ExpectedCoverage,LincolnLog):
     CurrentDirectory = os.getcwd() + '/'
     FullName = FNAFile
@@ -164,34 +198,39 @@ def VelvetCommander(K,Time,FNAFile,INS,apple,ExpectedCoverage,LincolnLog):
     FNADirectory = Splits[0]
     FNAFile = Splits[1]
     MinContigs = [100, 300, 400, 500]
-    CovCutoff  = [4,5,6]
-    for i,MC in enumerate(MinContigs):
-        for j,CC in enumerate(CovCutoff):
-            FolderName1             = CurrentDirectory + 'VelvetOutputs/%s-%dKMER-%dXC-%dMC-%dCC-%dINS-%dSig'%(FNAFile[0:-4],K,ExpectedCoverage,MC,CC,INS,apple)
-            FolderName2             = CurrentDirectory + 'VelvetOutputs/%s-%s-%dKMER-%dXC-%dMC-%dCC-%dINS-%dSig'%(Time,FNAFile[0:-4],K,ExpectedCoverage,MC,CC,INS,apple)
-            ActualSeq               = FolderName1 + '/Sequences'
-            LinkedSeq               = FolderName2 + '/Sequences'
-            ActualRoadmaps          = FolderName1 + '/Roadmaps'
-            LinkedRoadmaps          = FolderName2 + '/Roadmaps'
-            FolderOutput1           = ['mkdir', '%s'%FolderName1]
-            FolderOutput2           = ['mkdir', '%s'%FolderName2]
-            VelvetHOutput           = [Velveth, FolderName1,str(K), '-fasta', '-shortPaired', FullName]
-            SymbolicLink1           = ['ln' ,'-s', ActualSeq,LinkedSeq]
-            SymbolicLink2           = ['ln' ,'-s',ActualRoadmaps,LinkedRoadmaps]
-            #VelvetGOutput          = '%s %s -cov_cutoff 4 -exp_cov %d -min_contig_lgth %d'%(Velvetg,FolderName2,EC,MC)
-            VelvetGOutput           = [Velvetg, FolderName2,'-cov_cutoff',str(CC),'-exp_cov',str(ExpectedCoverage),'-min_contig_lgth',str(MC),'-ins_length',str(INS), '-ins_length_sd',str(apple)]
-            CommandList             = [FolderOutput1,FolderOutput2,VelvetHOutput,SymbolicLink1,SymbolicLink2,VelvetGOutput]
-            for C in CommandList:
-                subprocess.call(C, stderr=LincolnLog.ErrorLog, stdout=LincolnLog.InputLog, stdin=LincolnLog.InputLog)
-            
+    CovCutoff  = [10,20,30,40]
+    for K in [31,41,51,61]:
+        for i,MC in enumerate(MinContigs):
+            for j,CC in enumerate(CovCutoff):
+                FolderName1             = CurrentDirectory + 'VelvetOutputs/%s-%dKMER-%dXC-%dMC-%dCC-%dINS-%dSig'%(FNAFile[0:-4],K,ExpectedCoverage,MC,CC,INS,apple)
+                FolderName2             = CurrentDirectory + 'VelvetOutputs/%s-%s-%dKMER-%dXC-%dMC-%dCC-%dINS-%dSig'%(Time,FNAFile[0:-4],K,ExpectedCoverage,MC,CC,INS,apple)
+                ActualSeq               = FolderName1 + '/Sequences'
+                LinkedSeq               = FolderName2 + '/Sequences'
+                ActualRoadmaps          = FolderName1 + '/Roadmaps'
+                LinkedRoadmaps          = FolderName2 + '/Roadmaps'
+                FolderOutput1           = ['mkdir', '%s'%FolderName1]
+                FolderOutput2           = ['mkdir', '%s'%FolderName2]
+                VelvetHOutput           = [Velveth, FolderName1,str(K), '-fasta', '-shortPaired', FullName]
+                SymbolicLink1           = ['ln' ,'-s', ActualSeq,LinkedSeq]
+                SymbolicLink2           = ['ln' ,'-s',ActualRoadmaps,LinkedRoadmaps]
+                #VelvetGOutput          = '%s %s -cov_cutoff 4 -exp_cov %d -min_contig_lgth %d'%(Velvetg,FolderName2,EC,MC)
+                VelvetGOutput           = [Velvetg, FolderName2,'-cov_cutoff',str(CC),'-exp_cov',str(ExpectedCoverage),'-min_contig_lgth',str(MC),'-ins_length',str(INS), '-ins_length_sd',str(apple)]
+                CommandList             = [FolderOutput1,FolderOutput2,VelvetHOutput,SymbolicLink1,SymbolicLink2,VelvetGOutput]
+                for C in CommandList:
+                    subprocess.call(C, stderr=LincolnLog.ErrorLog, stdout=LincolnLog.InputLog, stdin=LincolnLog.InputLog)
+                
 
 
-Velveth, Velvetg, MetaSimDir, MCONFDir, FastaFilesDir, ErrorModelsDir, DistributionModelsDir = SystemCheck()
+VelvetAnalysisDir,Velveth, Velvetg, MetaSimDir, MCONFDir, FastaFilesDir, ErrorModelsDir, DistributionModelsDir = SystemCheck()
 ExpectedCoverages, KMER_Lengths, NumOfReads, FastaSizeList, FastaFileList, CurrentDirectory, Time = FileReader()
 MCONFBuilder(KMER_Lengths)
 InsertsLengths = [300]
 Sigma = SizeDistroBuilder(InsertsLengths,NumOfReads)
-LincolnLog = MetaSimulator(Time,MetaSimDir,InsertsLengths,FastaFileList,ExpectedCoverages,KMER_Lengths,Sigma, debug=False) #If we really, really, really want to build new FNA Data, mark debug to false
+LincolnLog = MetaSimulator(VelvetAnalysisDir,Time,MetaSimDir,InsertsLengths,FastaFileList,ExpectedCoverages,KMER_Lengths,Sigma, debug=False) #If we really, really, really want to build new FNA Data, mark debug to false
 LincolnLog.ErrorLog.close()
 LincolnLog.InputLog.close()
 LincolnLog.OutputLog.close()
+#CurrentDirectory = os.getcwd() + '/'
+#VelvetAnalysisDir = CurrentDirectory + 'VelvetAnalysis'
+#Filename = 'FastaFiles/BorreliaBurgdorferiB31_CP32-3.fasta'
+#VelvetAnalysis(Filename, VelvetAnalysisDir)
