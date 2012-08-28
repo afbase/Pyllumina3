@@ -160,6 +160,10 @@ def MetaSimulator(VelvetAnalysisDir,Time,MetaSimDir,InsertLengths,FastaFileList,
             VelvetAnalysis(filename,VelvetAnalysisDir)
         return LincolnLog
 def VelvetAnalysis(FileName, VelvetAnalysisDir):
+    """
+    1)  Composite Velvet analysis takes all parameters (input and output params and puts them together
+    2)  Individual Analysis makes a table of inputs as rows and outputs as columns
+    """
     DataVectors = list()
     Path,FNAname = os.path.split(FileName)
     SpeciesName = FNAname[0:-6]
