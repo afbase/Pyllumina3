@@ -22,8 +22,8 @@ def SystemCheck():
     #check velvet Installation
     pform = platform.uname()
     if 'Linux' in pform:
-        Velveth = '/usr/local/bin/velveth'
-        Velvetg = '/usr/local/bin/velvetg'
+        Velveth = '/usr/bin/velveth'
+        Velvetg = '/usr/bin/velvetg'
     else:
         Velveth = '/usr/local/genome/bin/velveth'
         Velvetg = '/usr/local/genome/bin/velvetg'
@@ -221,7 +221,7 @@ def VelvetCommander(K,Time,FNAFile,INS,apple,ExpectedCoverage,LincolnLog):
                 SymbolicLink1           = ['ln' ,'-s', ActualSeq,LinkedSeq]
                 SymbolicLink2           = ['ln' ,'-s',ActualRoadmaps,LinkedRoadmaps]
                 #VelvetGOutput          = '%s %s -cov_cutoff 4 -exp_cov %d -min_contig_lgth %d'%(Velvetg,FolderName2,EC,MC)
-                VelvetGOutput           = [Velvetg, FolderName2,'-cov_cutoff',str(CC),'-exp_cov',str(ExpectedCoverage),'-min_contig_lgth',str(MC),'-ins_length',str(INS), '-ins_length_sd',str(apple)]
+                VelvetGOutput           = [Velvetg, FolderName2,'-cov_cutoff',str(CC),'-exp_cov',str(ExpectedCoverage),'-min_contig_lgth',str(MC),'-ins_length',str(INS), '-ins_length_sd',str(apple), '-scaffolding', 'no']
                 CommandList             = [FolderOutput1,FolderOutput2,VelvetHOutput,SymbolicLink1,SymbolicLink2,VelvetGOutput]
                 for C in CommandList:
                     subprocess.call(C, stderr=LincolnLog.ErrorLog, stdout=LincolnLog.InputLog, stdin=LincolnLog.InputLog)

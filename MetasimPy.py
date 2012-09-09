@@ -3,7 +3,7 @@ from FastaSequence import fasta_read
 from Logger import Logger
 class MetasimPy:
     CurrentDirectory = os.getcwd()
-    DEBUG = True
+    DEBUG = False
     def __init__(self,OutputDirectory = 'MetaSimOutputs', 
                  LogObject = None, 
                  KMER_Length = 100, 
