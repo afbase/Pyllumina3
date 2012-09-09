@@ -10,7 +10,7 @@ def SystemCheck():
     VelvetAnalysisDir = CurrentDirectory + 'VelvetAnalysis'
     MetaSimDir = CurrentDirectory + 'MetaSimOutputs'
     MCONFDir = CurrentDirectory + 'MCONF'
-    FastaFilesDir = CurrentDirectory + 'FastaFiles'
+    FastaFilesDir = CurrentDirectory + 'FastaComposites'
     ErrorModelsDir = CurrentDirectory + 'ErrorModels'
     DistributionModelsDir = CurrentDirectory + 'DistributionModels'
     VelvetDir = CurrentDirectory + 'VelvetOutputs'
@@ -41,7 +41,7 @@ def FileReader():
         FastaSequenceList = fasta_read(filename)
         FastaSizeList.append(len(FastaSequenceList[0].GetSeq()))
 #    ExpectedCoverages = [i for i in range(30,51,5)]
-    ExpectedCoverages = [100,200,300,400,500]
+    ExpectedCoverages = [100,300,400,500]
     KMER_Lengths = [75]
     NumOfReads = list()
     for i in FastaSizeList:
@@ -61,17 +61,17 @@ def MCONFBuilder(KMER_Lengths):
         BasicError = ErrorModelMaker(FileName = FileName1,N=i)
         VaryError = ErrorModelMaker(Variation = True, FileName=FileName2)
 
-def SizeDistroBuilder(KMER_Lengths,NumOfReads):
+def SizeDistroBuilder(INSlength,NumOfReads):
     #SizeDistribution
     """
             Inputs:
-            Mean = the average length of DNA Segments (integer)
+            INSlength = the average length of space between pairs of DNA Segments (integer)
             Sigma = the standard deviation of the DNA Segments (integer)
             NumOfReads = Number or reads for the distribution
             Objective of class: return a distribution file
     """
-    Sigma = [i for i in range(8,15)]
-    Mean = KMER_Lengths
+    Sigma = [1,5,9,13,23]
+    Mean = INSlength
     for i in Sigma:
         for j in Mean:
             for k in NumOfReads:
@@ -169,7 +169,7 @@ def VelvetAnalysis(FileName, VelvetAnalysisDir):
     SpeciesName = FNAname[0:-6]
     SpeciesLog = VelvetAnalysisDir+'/'+SpeciesName+'Analysis'
     AnalysisFilePtr = open(SpeciesLog,'w')
-    AnalysisFilePtr.write('MaxContigLength,KMER,ExpectedCoverage,MinContig,CoverageCutoff,Insertlength,InsSigma,Nodes,N50,Max,UsedReads,TotalReads\n')
+    AnalysisFilePtr.write('largest Contig, n50, Total Contig Length, KMER, Expected Covereage, Minimum Contig Coverage Cutoff, Insert Pair Length, Insert Pair Sigma, Scaffolding\n')
     BasePath = Path[0:-11]
     VelvetLogOutputs= BasePath + 'VelvetOutputs/*' + SpeciesName + '*/Log'
     SpecieLogs = glob.glob(VelvetLogOutputs)
@@ -185,11 +185,14 @@ def VelvetAnalysis(FileName, VelvetAnalysisDir):
             M = re.findall('Final graph has (\d+) nodes and n50 of (\d+), max (\d+), total (\d+), using (\d+)/(\d+) reads', Lines[-1])
             M = M[0]
             #Max,KMER,ExpectedCoverage,MinContig,CoverageCutoff,Insertlength,InsSigma,Nodes,N50,Max,UsedReads,TotalReads
-            DataVectors.append((int(M[2]),int(KMER),int(ExpectedCoverage),int(MinContig),int(CoverageCutoff),int(Insertlength),int(InsSigma),int(M[0]),int(M[1]),int(M[3]),int(M[4]),int(M[5])))
+            #DataVectors.append((int(M[2]),int(KMER),int(ExpectedCoverage),int(MinContig),int(CoverageCutoff),int(Insertlength),int(InsSigma),int(M[0]),int(M[1]),int(M[3]),int(M[4]),int(M[5])))
             #AnalysisFilePtr.write(Fname + '\n')
+            #The data vectores should have largest contig, n50, tcl, velvet inputs, metasim inputs, etc.
+            #DataVector:  largest Contig, n50, Total Contig Length, KMER, Expected Covereage, Minimum Contig, Coverage Cutoff, Insert Pair Length, Insert Pair Sigma, Scaffolding, Final Graph Node count, used reads, total reads 
+            DataVectors.append((int(M[2]), int(M[1]), int(M[3]), int(KMER), int(ExpectedCoverage), int(MinContig), int(CoverageCutoff), int(Insertlength), int(InsSigma), 0, int(M[0]), int(M[4]), int(M[5]) )              )
     DataVectors.sort(reverse=True)
     for K in DataVectors:
-        AnalysisFilePtr.write('%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n'%(K[0 ],K[1 ],K[2 ],K[3 ],K[4 ],K[5  ],K[6 ],K[7 ],K[8 ],K[9 ],K[10],K[11]))
+        AnalysisFilePtr.write('%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n'%(K[0 ],K[1 ],K[2 ],K[3 ],K[4 ],K[5  ],K[6 ],K[7 ],K[8 ],K[9 ],K[10],K[11],K[12]))
     AnalysisFilePtr.close()
         
         
@@ -201,7 +204,7 @@ def VelvetCommander(K,Time,FNAFile,INS,apple,ExpectedCoverage,LincolnLog):
     Splits = os.path.split(FNAFile)
     FNADirectory = Splits[0]
     FNAFile = Splits[1]
-    MinContigs = [100, 300, 400, 500]
+    MinContigs = [100, 500, 1000]
     CovCutoff  = [10,20,30,40]
     for K in [31,41,51,61]:
         for i,MC in enumerate(MinContigs):

@@ -1,0 +1,6 @@
+velveth <directory> <Kmer len> -fastq <filename>  
+ln -s  
+cd..
+velvetg folder -cov_cutoff -exp_cov -min_contig_lgth 500
+
+(int(M[2]), int(M[1]), int(M[3]), int(KMER), int(ExpectedCoverage), int(MinContig), int(CoverageCutoff), int(Insertlength), int(InsSigma), 0, int(M[0]), int(M[4]), int(M[5]) )              )
