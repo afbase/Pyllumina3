@@ -29,13 +29,13 @@ def SystemCheck():
         Velvetg = '/usr/local/genome/bin/velvetg'
     return VelvetAnalysisDir, Velveth, Velvetg, MetaSimDir, MCONFDir, FastaFilesDir, ErrorModelsDir, DistributionModelsDir
 
-def FileReader():
+def FileReader(FileDirectory):
     CurrentDirectory = os.getcwd() + '/'
     now = datetime.datetime.now()
     Time = [ now.year, now.month, now.day, now.hour, now.minute,now.second]
     Time = ''.join([str(i) for i in Time])
     """1) read all the fasta files, determine the size of the data"""
-    FastaFileList = glob.glob('FastaFiles/*.fasta') #find all files of this format
+    FastaFileList = glob.glob(FileDirectory + '/*.fasta') #find all files of this format
     FastaSizeList = list()
     for filename in FastaFileList:
         FastaSequenceList = fasta_read(filename)
@@ -229,7 +229,7 @@ def VelvetCommander(K,Time,FNAFile,INS,apple,ExpectedCoverage,LincolnLog):
 
 
 VelvetAnalysisDir,Velveth, Velvetg, MetaSimDir, MCONFDir, FastaFilesDir, ErrorModelsDir, DistributionModelsDir = SystemCheck()
-ExpectedCoverages, KMER_Lengths, NumOfReads, FastaSizeList, FastaFileList, CurrentDirectory, Time = FileReader()
+ExpectedCoverages, KMER_Lengths, NumOfReads, FastaSizeList, FastaFileList, CurrentDirectory, Time = FileReader(FastaFilesDir)
 MCONFBuilder(KMER_Lengths)
 InsertsLengths = [300]
 Sigma = SizeDistroBuilder(InsertsLengths,NumOfReads)
