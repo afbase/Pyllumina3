@@ -211,7 +211,7 @@ def VelvetCommander(K,Time,FNAFile,INS,apple,ExpectedCoverage,LincolnLog):
     CovCutoff  = [10,20]
     for SC in Scaffolding:
         for K in [65,61,55]:
-            for i,MC in enumerate(MinContigs):-
+            for i,MC in enumerate(MinContigs):
                 for j,CC in enumerate(CovCutoff):
                     FolderName1             = CurrentDirectory + 'VelvetOutputs/%s-%dKMER-%dXC-%dMC-%dCC-%dINS-%dSig-%s_SCAFF'%(FNAFile[0:-4],K,ExpectedCoverage,MC,CC,INS,apple,SC)
                     FolderName2             = CurrentDirectory + 'VelvetOutputs/%s-%s-%dKMER-%dXC-%dMC-%dCC-%dINS-%dSig-%s_SCAFF'%(Time,FNAFile[0:-4],K,ExpectedCoverage,MC,CC,INS,apple,SC)
