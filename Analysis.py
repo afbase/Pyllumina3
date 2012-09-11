@@ -1,9 +1,41 @@
 import glob, re, os
-def VelvetAnalysis(FileName, VelvetAnalysisDir):
+def VelvetAnalysis():
     """
     1)  Composite Velvet analysis takes all parameters (input and output params and puts them together
     2)  Individual Analysis makes a table of inputs as rows and outputs as columns
     """
+    CurrentDirectory = os.getcwd()
+    FastaCompositeFiles = CurrentDirectory + '/FastaComposites'
+    VelvetAnalysisDir = CurrentDirectory + '/VelvetAnalysis'
+    FastaFiles = glob.glob(FastaCompositeFiles + '/*.fasta')
+    for j,FileName in enumerate(FastaFiles):
+        DataVectors = list()
+        Path,FNAname = os.path.split(FileName)
+        SpeciesName = FNAname[0:-6]
+        SpeciesLog = VelvetAnalysisDir+'/'+SpeciesName+'Analysis'
+        AnalysisFilePtr = open(SpeciesLog,'w')
+        AnalysisFilePtr.write('largest Contig, n50, Total Contig Length, KMER, Expected Covereage, Minimum Contig, Coverage Cutoff, Insert Pair Length, Insert Pair Sigma, Scaffolding,Final Graph Node count, used reads, total reads, Final Graph has X Nodes\n')
+        BasePath = CurrentDirectory
+        VelvetLogOutputs= BasePath + '/VelvetOutputs/*' + SpeciesName + '*/Log'
+        SpecieLogs = glob.glob(VelvetLogOutputs)
+        for i,Fname in enumerate(SpecieLogs):
+            #31KMER-35XC-500MC-4CC-300INS-9Sig
+            VelvetParams = re.findall('(\d+)KMER-(\d+)XC-(\d+)MC-(\d+)CC-(\d+)INS-(\d+)Sig',Fname)
+            if len(VelvetParams)>0:
+                KMER,ExpectedCoverage,MinContig,CoverageCutoff,Insertlength,InsSigma = VelvetParams[0][0], VelvetParams[0][1], VelvetParams[0][2], VelvetParams[0][3], VelvetParams[0][4], VelvetParams[0][5]  
+            FilePtr = open(Fname,'r')
+            Lines = FilePtr.readlines()
+            FilePtr.close()
+            if 'Final graph' in Lines[-1]:
+                M = re.findall('Final graph has (\d+) nodes and n50 of (\d+), max (\d+), total (\d+), using (\d+)/(\d+) reads', Lines[-1])
+                M = M[0]
+                #The data vectores should have largest contig, n50, tcl, velvet inputs, metasim inputs, etc.
+                #DataVector:  largest Contig, n50, Total Contig Length, KMER, Expected Covereage, Minimum Contig, Coverage Cutoff, Insert Pair Length, Insert Pair Sigma, Scaffolding, Final Graph Node count, used reads, total reads, Nodes 
+                DataVectors.append((int(M[2]), int(M[1]), int(M[3]), int(KMER), int(ExpectedCoverage), int(MinContig), int(CoverageCutoff), int(Insertlength), int(InsSigma), 0, int(M[0]), int(M[4]), int(M[5]), int(M[0]) )              )
+        DataVectors.sort(reverse=True)
+        for K in DataVectors:
+            AnalysisFilePtr.write('%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n'%(K[0 ],K[1 ],K[2 ],K[3 ],K[4 ],K[5  ],K[6 ],K[7 ],K[8 ],K[9 ],K[10],K[11],K[12],K[13]))
+        AnalysisFilePtr.close()
 def VelvetCompositeAnalysis(FileName, VelvetAnalysisDir):
     """
     1)  Composite Velvet analysis takes all parameters (input and output params and puts them together
@@ -82,10 +114,4 @@ def pprint_table(out, table):
         print >> out
         
 if __name__ == "__main__":
-    table = [["", "taste", "land speed", "life"],
-        ["spam", 300101, 4, 1003],
-        ["eggs", 105, 13, 42],
-        ["lumberjacks", 13, 105, 10]]
-    import sys
-    out = sys.stdout
-    pprint_table(out, table)
+    VelvetAnalysis()

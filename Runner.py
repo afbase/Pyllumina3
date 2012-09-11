@@ -41,7 +41,7 @@ def FileReader(FileDirectory):
         FastaSequenceList = fasta_read(filename)
         FastaSizeList.append(len(FastaSequenceList[0].GetSeq()))
 #    ExpectedCoverages = [i for i in range(30,51,5)]
-    ExpectedCoverages = [100,300,400,500]
+    ExpectedCoverages = [400,500,600,350]
     KMER_Lengths = [75]
     NumOfReads = list()
     for i in FastaSizeList:
@@ -70,7 +70,7 @@ def SizeDistroBuilder(INSlength,NumOfReads):
             NumOfReads = Number or reads for the distribution
             Objective of class: return a distribution file
     """
-    Sigma = [1,5,9,13,23]
+    Sigma = [1,9,11,13,6]
     Mean = INSlength
     for i in Sigma:
         for j in Mean:
@@ -164,35 +164,37 @@ def VelvetAnalysis(FileName, VelvetAnalysisDir):
     1)  Composite Velvet analysis takes all parameters (input and output params and puts them together
     2)  Individual Analysis makes a table of inputs as rows and outputs as columns
     """
+    CurrentDirectory = os.getcwd()
     DataVectors = list()
     Path,FNAname = os.path.split(FileName)
     SpeciesName = FNAname[0:-6]
     SpeciesLog = VelvetAnalysisDir+'/'+SpeciesName+'Analysis'
     AnalysisFilePtr = open(SpeciesLog,'w')
-    AnalysisFilePtr.write('largest Contig, n50, Total Contig Length, KMER, Expected Covereage, Minimum Contig Coverage Cutoff, Insert Pair Length, Insert Pair Sigma, Scaffolding\n')
-    BasePath = Path[0:-11]
-    VelvetLogOutputs= BasePath + 'VelvetOutputs/*' + SpeciesName + '*/Log'
+    AnalysisFilePtr.write('largest Contig, n50, Total Contig Length, KMER, Expected Covereage, Minimum Contig, Coverage Cutoff, Insert Pair Length, Insert Pair Sigma, Scaffolding,Final Graph Node count, used reads, total reads, Final Graph has X Nodes\n')
+    BasePath = CurrentDirectory
+    VelvetLogOutputs= BasePath + '/VelvetOutputs/*' + SpeciesName + '*/Log'
     SpecieLogs = glob.glob(VelvetLogOutputs)
     for i,Fname in enumerate(SpecieLogs):
         #31KMER-35XC-500MC-4CC-300INS-9Sig
-        VelvetParams = re.findall('(\d+)KMER-(\d+)XC-(\d+)MC-(\d+)CC-(\d+)INS-(\d+)Sig',Fname)
+        VelvetParams = re.findall('(\d+)KMER-(\d+)XC-(\d+)MC-(\d+)CC-(\d+)INS-(\d+)Sig-(\w+)_SCAFF',Fname)
         if len(VelvetParams)>0:
-            KMER,ExpectedCoverage,MinContig,CoverageCutoff,Insertlength,InsSigma = VelvetParams[0][0], VelvetParams[0][1], VelvetParams[0][2], VelvetParams[0][3], VelvetParams[0][4], VelvetParams[0][5]  
+            KMER,ExpectedCoverage,MinContig,CoverageCutoff,Insertlength,InsSigma,Scaffolding = VelvetParams[0][0], VelvetParams[0][1], VelvetParams[0][2], VelvetParams[0][3], VelvetParams[0][4], VelvetParams[0][5], VelvetParams[0][6]
+            if Scaffolding == 'yes':
+                Scaffolding = 1
+            else:
+                Scaffolding = 0  
         FilePtr = open(Fname,'r')
         Lines = FilePtr.readlines()
         FilePtr.close()
         if 'Final graph' in Lines[-1]:
             M = re.findall('Final graph has (\d+) nodes and n50 of (\d+), max (\d+), total (\d+), using (\d+)/(\d+) reads', Lines[-1])
             M = M[0]
-            #Max,KMER,ExpectedCoverage,MinContig,CoverageCutoff,Insertlength,InsSigma,Nodes,N50,Max,UsedReads,TotalReads
-            #DataVectors.append((int(M[2]),int(KMER),int(ExpectedCoverage),int(MinContig),int(CoverageCutoff),int(Insertlength),int(InsSigma),int(M[0]),int(M[1]),int(M[3]),int(M[4]),int(M[5])))
-            #AnalysisFilePtr.write(Fname + '\n')
             #The data vectores should have largest contig, n50, tcl, velvet inputs, metasim inputs, etc.
-            #DataVector:  largest Contig, n50, Total Contig Length, KMER, Expected Covereage, Minimum Contig, Coverage Cutoff, Insert Pair Length, Insert Pair Sigma, Scaffolding, Final Graph Node count, used reads, total reads 
-            DataVectors.append((int(M[2]), int(M[1]), int(M[3]), int(KMER), int(ExpectedCoverage), int(MinContig), int(CoverageCutoff), int(Insertlength), int(InsSigma), 0, int(M[0]), int(M[4]), int(M[5]) )              )
+            #DataVector:  largest Contig, n50, Total Contig Length, KMER, Expected Covereage, Minimum Contig, Coverage Cutoff, Insert Pair Length, Insert Pair Sigma, Scaffolding, Final Graph Node count, used reads, total reads, Nodes 
+            DataVectors.append((int(M[2]), int(M[1]), int(M[3]), int(KMER), int(ExpectedCoverage), int(MinContig), int(CoverageCutoff), int(Insertlength), int(InsSigma), Scaffolding, int(M[0]), int(M[4]), int(M[5]) ) ,       int(M[0])     )
     DataVectors.sort(reverse=True)
     for K in DataVectors:
-        AnalysisFilePtr.write('%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n'%(K[0 ],K[1 ],K[2 ],K[3 ],K[4 ],K[5  ],K[6 ],K[7 ],K[8 ],K[9 ],K[10],K[11],K[12]))
+        AnalysisFilePtr.write('%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n'%(K[0 ],K[1 ],K[2 ],K[3 ],K[4 ],K[5  ],K[6 ],K[7 ],K[8 ],K[9 ],K[10],K[11],K[12],K[13]))
     AnalysisFilePtr.close()
         
         
@@ -204,28 +206,30 @@ def VelvetCommander(K,Time,FNAFile,INS,apple,ExpectedCoverage,LincolnLog):
     Splits = os.path.split(FNAFile)
     FNADirectory = Splits[0]
     FNAFile = Splits[1]
-    MinContigs = [100, 500, 1000]
-    CovCutoff  = [10,20,30,40]
-    for K in [31,41,51,61]:
-        for i,MC in enumerate(MinContigs):
-            for j,CC in enumerate(CovCutoff):
-                FolderName1             = CurrentDirectory + 'VelvetOutputs/%s-%dKMER-%dXC-%dMC-%dCC-%dINS-%dSig'%(FNAFile[0:-4],K,ExpectedCoverage,MC,CC,INS,apple)
-                FolderName2             = CurrentDirectory + 'VelvetOutputs/%s-%s-%dKMER-%dXC-%dMC-%dCC-%dINS-%dSig'%(Time,FNAFile[0:-4],K,ExpectedCoverage,MC,CC,INS,apple)
-                ActualSeq               = FolderName1 + '/Sequences'
-                LinkedSeq               = FolderName2 + '/Sequences'
-                ActualRoadmaps          = FolderName1 + '/Roadmaps'
-                LinkedRoadmaps          = FolderName2 + '/Roadmaps'
-                FolderOutput1           = ['mkdir', '%s'%FolderName1]
-                FolderOutput2           = ['mkdir', '%s'%FolderName2]
-                VelvetHOutput           = [Velveth, FolderName1,str(K), '-fasta', '-shortPaired', FullName]
-                SymbolicLink1           = ['ln' ,'-s', ActualSeq,LinkedSeq]
-                SymbolicLink2           = ['ln' ,'-s',ActualRoadmaps,LinkedRoadmaps]
-                #VelvetGOutput          = '%s %s -cov_cutoff 4 -exp_cov %d -min_contig_lgth %d'%(Velvetg,FolderName2,EC,MC)
-                VelvetGOutput           = [Velvetg, FolderName2,'-cov_cutoff',str(CC),'-exp_cov',str(ExpectedCoverage),'-min_contig_lgth',str(MC),'-ins_length',str(INS), '-ins_length_sd',str(apple), '-scaffolding', 'no']
-                CommandList             = [FolderOutput1,FolderOutput2,VelvetHOutput,SymbolicLink1,SymbolicLink2,VelvetGOutput]
-                for C in CommandList:
-                    subprocess.call(C, stderr=LincolnLog.ErrorLog, stdout=LincolnLog.InputLog, stdin=LincolnLog.InputLog)
-                
+    MinContigs = [700]
+    Scaffolding = ['yes','no']
+    CovCutoff  = [10,20]
+    for SC in Scaffolding:
+        for K in [65,61,55]:
+            for i,MC in enumerate(MinContigs):-
+                for j,CC in enumerate(CovCutoff):
+                    FolderName1             = CurrentDirectory + 'VelvetOutputs/%s-%dKMER-%dXC-%dMC-%dCC-%dINS-%dSig-%s_SCAFF'%(FNAFile[0:-4],K,ExpectedCoverage,MC,CC,INS,apple,SC)
+                    FolderName2             = CurrentDirectory + 'VelvetOutputs/%s-%s-%dKMER-%dXC-%dMC-%dCC-%dINS-%dSig-%s_SCAFF'%(Time,FNAFile[0:-4],K,ExpectedCoverage,MC,CC,INS,apple,SC)
+                    ActualSeq               = FolderName1 + '/Sequences'
+                    LinkedSeq               = FolderName2 + '/Sequences'
+                    ActualRoadmaps          = FolderName1 + '/Roadmaps'
+                    LinkedRoadmaps          = FolderName2 + '/Roadmaps'
+                    FolderOutput1           = ['mkdir', '%s'%FolderName1]
+                    FolderOutput2           = ['mkdir', '%s'%FolderName2]
+                    VelvetHOutput           = [Velveth, FolderName1,str(K), '-fasta', '-shortPaired', FullName]
+                    SymbolicLink1           = ['ln' ,'-s', ActualSeq,LinkedSeq]
+                    SymbolicLink2           = ['ln' ,'-s',ActualRoadmaps,LinkedRoadmaps]
+                    #VelvetGOutput          = '%s %s -cov_cutoff 4 -exp_cov %d -min_contig_lgth %d'%(Velvetg,FolderName2,EC,MC)
+                    VelvetGOutput           = [Velvetg, FolderName2,'-cov_cutoff',str(CC),'-exp_cov',str(ExpectedCoverage),'-min_contig_lgth',str(MC),'-ins_length',str(INS), '-ins_length_sd',str(apple), '-scaffolding', SC]
+                    CommandList             = [FolderOutput1,FolderOutput2,VelvetHOutput,SymbolicLink1,SymbolicLink2,VelvetGOutput]
+                    for C in CommandList:
+                        subprocess.call(C, stderr=LincolnLog.ErrorLog, stdout=LincolnLog.InputLog, stdin=LincolnLog.InputLog)
+                    
 
 
 VelvetAnalysisDir,Velveth, Velvetg, MetaSimDir, MCONFDir, FastaFilesDir, ErrorModelsDir, DistributionModelsDir = SystemCheck()
