@@ -167,7 +167,7 @@ def MetaSimulator(VelvetAnalysisDir,Time,MetaSimDir,InsertLengths,FastaFileList,
                         ConcatenatedFilename=''.join([MetaSimDir,'/',str(INS),str(X),str(K),str(apple),'.fna'])
                         MergeFastaFiles(FNADifference, ConcatenatedFilename)
                         VelvetCommander(31,Time,ConcatenatedFilename,INS,apple,ExpectedCoverage,LincolnLog)
-        VelvetAnalysis(filename,VelvetAnalysisDir)#This needs to be redone
+                        VelvetAnalysis(filename,VelvetAnalysisDir)#This needs to be redone
         return LincolnLog
 def VelvetAnalysis(FileName, VelvetAnalysisDir):
     """
@@ -177,7 +177,7 @@ def VelvetAnalysis(FileName, VelvetAnalysisDir):
     CurrentDirectory = os.getcwd()
     DataVectors = list()
     Path,FNAname = os.path.split(FileName)
-    SpeciesName = FNAname[0:-6]
+    SpeciesName = FNAname[0:-4]
     SpeciesLog = VelvetAnalysisDir+'/'+SpeciesName+'Analysis'
     AnalysisFilePtr = open(SpeciesLog,'w')
     AnalysisFilePtr.write('largest Contig, n50, Total Contig Length, KMER, Expected Covereage, Minimum Contig, Coverage Cutoff, Insert Pair Length, Insert Pair Sigma, Scaffolding,Final Graph Node count, used reads, total reads, Final Graph has X Nodes\n')
