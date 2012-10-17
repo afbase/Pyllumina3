@@ -3,7 +3,7 @@ from ErrorModelMaker import ErrorModelMaker
 from DistributionMaker import SizeDistribution
 from MetasimPy import MetasimPy
 from Logger import Logger
-import glob, FastaSequence, os, subprocess, datetime, platform, re
+import glob, FastaSequence, os, subprocess, datetime, platform, re, shutil
 
 def SystemCheck():
     CurrentDirectory = os.getcwd() + '/'
@@ -49,6 +49,12 @@ def FileReader(FileDirectory):
             for k in KMER_Lengths:
                 NumOfReads.append( i * j / k )
     return ExpectedCoverages, KMER_Lengths, NumOfReads, FastaSizeList, FastaFileList, CurrentDirectory, Time
+
+def MergeFastaFiles(FileList,concatenatedName):
+    destination = open(concatenatedName,'wb')
+    for i,fileName in enumerate(FileList):
+        shutil.copyfileobj(open(fileName,'rb'), destination)
+    destination.close()
 
 def MCONFBuilder(KMER_Lengths):
     #Build Error Model
@@ -98,6 +104,7 @@ def MetaSimulator(VelvetAnalysisDir,Time,MetaSimDir,InsertLengths,FastaFileList,
     FragmenDistribution = 'gaussian' by default or 'uniform' or filename (filename implies empirical)
     NumOfReads = Numbers of reads or base pairs 
     """
+    MetaSimFilesGlob = MetaSimDir + '\*.fna'
     LincolnLog = Logger()
     LincolnLog.BuildLogFiles()
 #    Needs to do the following
@@ -110,11 +117,13 @@ def MetaSimulator(VelvetAnalysisDir,Time,MetaSimDir,InsertLengths,FastaFileList,
     if Dbug:
         return LincolnLog
     else:
-        for filename in FastaFileList:
+        for INS in InsertLengths:
             for X in ExpectedCoverages:
                 for K in KMER_Lengths:
                     for apple in Sigma:
-                        for INS in InsertLengths:
+                        #Build a directory of Files in the metasimoutputs directory.
+                        FNAFileSet = set(glob.glob(MetaSimFilesGlob))
+                        for filename in FastaFileList:
                             """
                             for i in FastaSizeList:
                                 for j in ExpectedCoverages:
@@ -151,13 +160,14 @@ def MetaSimulator(VelvetAnalysisDir,Time,MetaSimDir,InsertLengths,FastaFileList,
                                       Sigma = apple,
                                       FragmentDistribution = InsertLengthDistribution,
                                       NumOfReads = NOR)
-                            #Find the corresponding FNA File made by MetasimPy command
-                            MetaSimFiles = MetaSimDir+ '/' + '*.fna'
-                            SetOfFNAFiles = set(glob.glob(MetaSimFiles))
-                            FNADifference = SetOfFNAFiles - FNAFileSet
-                            FNAFile = FNADifference.pop()
-                            VelvetCommander(31,Time,FNAFile,INS,apple,ExpectedCoverage,LincolnLog)
-            VelvetAnalysis(filename,VelvetAnalysisDir)
+                        #Needs to concatenate the corresponding Fasta Files.
+                        MetaSimFiles = MetaSimDir+ '/' + '*.fna'
+                        SetOfFNAFiles = set(glob.glob(MetaSimFiles))
+                        FNADifference = list(SetOfFNAFiles - FNAFileSet)
+                        ConcatenatedFilename=''.join([MetaSimDir,'/',str(INS),str(X),str(K),str(apple),'.fna'])
+                        MergeFastaFiles(FNADifference, ConcatenatedFilename)
+                        VelvetCommander(31,Time,ConcatenatedFilename,INS,apple,ExpectedCoverage,LincolnLog)
+        VelvetAnalysis(filename,VelvetAnalysisDir)#This needs to be redone
         return LincolnLog
 def VelvetAnalysis(FileName, VelvetAnalysisDir):
     """
