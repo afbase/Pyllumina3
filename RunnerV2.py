@@ -165,7 +165,11 @@ def MetaSimulator(VelvetAnalysisDir,Time,MetaSimDir,InsertLengths,FastaFileList,
                         SetOfFNAFiles = set(glob.glob(MetaSimFiles))
                         FNADifference = list(SetOfFNAFiles - FNAFileSet)
 <<<<<<< HEAD
+<<<<<<< HEAD
                         ConcatenatedFilename=''.join([MetaSimDir,'/','INS',str(INS),'EXP',str(X),'KMER',str(K),'SIGMA',str(apple),'.fna'])
+=======
+                        ConcatenatedFilename=''.join([MetaSimDir,'/','INS',str(INS),'EX',str(X),'KMER',str(K),'SIGMA',str(apple),'.fna'])
+>>>>>>> branch 'master' of https://github.com/afbase/Pyllumina3.git
 =======
                         ConcatenatedFilename=''.join([MetaSimDir,'/','INS',str(INS),'EX',str(X),'KMER',str(K),'SIGMA',str(apple),'.fna'])
 >>>>>>> branch 'master' of https://github.com/afbase/Pyllumina3.git
