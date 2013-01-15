@@ -1,69 +1,169 @@
 #Error Model written by Pyllumina 2.1
+<<<<<<< HEAD
 #Date of Creation: 2012101720358
+=======
+#Date of Creation: 2012101718933
+>>>>>>> branch 'master' of https://github.com/afbase/Pyllumina3.git
 # (Set switch rates for G following G)
+<<<<<<< HEAD
 G(G,T) 0.311622
 G(G,A) 0.343657
 G(G,C) 0.344721
+=======
+G(G,T) 0.343393
+G(G,A) 0.316112
+G(G,C) 0.340495
+>>>>>>> branch 'master' of https://github.com/afbase/Pyllumina3.git
 # (Set switch rates for G following T)
+<<<<<<< HEAD
 G(T,G) 0.326855
 G(T,A) 0.360366
 G(T,C) 0.312779
+=======
+G(T,G) 0.349420
+G(T,A) 0.331709
+G(T,C) 0.318870
+>>>>>>> branch 'master' of https://github.com/afbase/Pyllumina3.git
 # (Set switch rates for G following A)
+<<<<<<< HEAD
 G(A,G) 0.366808
 G(A,T) 0.302074
 G(A,C) 0.331119
+=======
+G(A,G) 0.320369
+G(A,T) 0.308712
+G(A,C) 0.370919
+>>>>>>> branch 'master' of https://github.com/afbase/Pyllumina3.git
 # (Set switch rates for G following C)
+<<<<<<< HEAD
 G(C,G) 0.367369
 G(C,T) 0.299529
 G(C,A) 0.333103
+=======
+G(C,G) 0.350176
+G(C,T) 0.354775
+G(C,A) 0.295049
+>>>>>>> branch 'master' of https://github.com/afbase/Pyllumina3.git
 # (Set switch rates for T following G)
+<<<<<<< HEAD
 T(G,T) 0.315642
 T(G,A) 0.339954
 T(G,C) 0.344403
+=======
+T(G,T) 0.312696
+T(G,A) 0.354127
+T(G,C) 0.333177
+>>>>>>> branch 'master' of https://github.com/afbase/Pyllumina3.git
 # (Set switch rates for T following T)
+<<<<<<< HEAD
 T(T,G) 0.327819
 T(T,A) 0.318455
 T(T,C) 0.353726
+=======
+T(T,G) 0.295593
+T(T,A) 0.327784
+T(T,C) 0.376623
+>>>>>>> branch 'master' of https://github.com/afbase/Pyllumina3.git
 # (Set switch rates for T following A)
+<<<<<<< HEAD
 T(A,G) 0.340114
 T(A,T) 0.346942
 T(A,C) 0.312944
+=======
+T(A,G) 0.349901
+T(A,T) 0.313205
+T(A,C) 0.336894
+>>>>>>> branch 'master' of https://github.com/afbase/Pyllumina3.git
 # (Set switch rates for T following C)
+<<<<<<< HEAD
 T(C,G) 0.345960
 T(C,T) 0.354472
 T(C,A) 0.299568
+=======
+T(C,G) 0.331218
+T(C,T) 0.343439
+T(C,A) 0.325343
+>>>>>>> branch 'master' of https://github.com/afbase/Pyllumina3.git
 # (Set switch rates for A following G)
+<<<<<<< HEAD
 A(G,T) 0.301542
 A(G,A) 0.325845
 A(G,C) 0.372614
+=======
+A(G,T) 0.319804
+A(G,A) 0.337763
+A(G,C) 0.342433
+>>>>>>> branch 'master' of https://github.com/afbase/Pyllumina3.git
 # (Set switch rates for A following T)
+<<<<<<< HEAD
 A(T,G) 0.348626
 A(T,A) 0.305147
 A(T,C) 0.346227
+=======
+A(T,G) 0.354462
+A(T,A) 0.337154
+A(T,C) 0.308384
+>>>>>>> branch 'master' of https://github.com/afbase/Pyllumina3.git
 # (Set switch rates for A following A)
+<<<<<<< HEAD
 A(A,G) 0.294869
 A(A,T) 0.350957
 A(A,C) 0.354174
+=======
+A(A,G) 0.361189
+A(A,T) 0.299596
+A(A,C) 0.339216
+>>>>>>> branch 'master' of https://github.com/afbase/Pyllumina3.git
 # (Set switch rates for A following C)
+<<<<<<< HEAD
 A(C,G) 0.313479
 A(C,T) 0.328616
 A(C,A) 0.357905
+=======
+A(C,G) 0.323950
+A(C,T) 0.347134
+A(C,A) 0.328916
+>>>>>>> branch 'master' of https://github.com/afbase/Pyllumina3.git
 # (Set switch rates for C following G)
+<<<<<<< HEAD
 C(G,T) 0.332732
 C(G,A) 0.329970
 C(G,C) 0.337298
+=======
+C(G,T) 0.325932
+C(G,A) 0.340316
+C(G,C) 0.333752
+>>>>>>> branch 'master' of https://github.com/afbase/Pyllumina3.git
 # (Set switch rates for C following T)
+<<<<<<< HEAD
 C(T,G) 0.363760
 C(T,A) 0.314167
 C(T,C) 0.322073
+=======
+C(T,G) 0.343701
+C(T,A) 0.328675
+C(T,C) 0.327624
+>>>>>>> branch 'master' of https://github.com/afbase/Pyllumina3.git
 # (Set switch rates for C following A)
+<<<<<<< HEAD
 C(A,G) 0.318203
 C(A,T) 0.320037
 C(A,C) 0.361760
+=======
+C(A,G) 0.365896
+C(A,T) 0.320727
+C(A,C) 0.313378
+>>>>>>> branch 'master' of https://github.com/afbase/Pyllumina3.git
 # (Set switch rates for C following C)
+<<<<<<< HEAD
 C(C,G) 0.299651
 C(C,T) 0.352640
 C(C,A) 0.347709
+=======
+C(C,G) 0.342766
+C(C,T) 0.324009
+C(C,A) 0.333225
+>>>>>>> branch 'master' of https://github.com/afbase/Pyllumina3.git
 # Set Deletion Rates for every G 
 DELETION_ERROR (G)
 0.00606508512067949982077275095093682466540485620
