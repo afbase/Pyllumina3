@@ -10,7 +10,7 @@ def SystemCheck():
     VelvetAnalysisDir = CurrentDirectory + 'VelvetAnalysis'
     MetaSimDir = CurrentDirectory + 'MetaSimOutputs'
     MCONFDir = CurrentDirectory + 'MCONF'
-    FastaFilesDir = CurrentDirectory + 'FastaComposites'
+    FastaFilesDir = CurrentDirectory + 'FastaFiles'
     ErrorModelsDir = CurrentDirectory + 'ErrorModels'
     DistributionModelsDir = CurrentDirectory + 'DistributionModels'
     VelvetDir = CurrentDirectory + 'VelvetOutputs'
@@ -41,7 +41,7 @@ def FileReader(FileDirectory):
         FastaSequenceList = fasta_read(filename)
         FastaSizeList.append(len(FastaSequenceList[0].GetSeq()))
 #    ExpectedCoverages = [i for i in range(30,51,5)]
-    ExpectedCoverages = [400,500,600,350]
+    ExpectedCoverages = [300]#[400,500,600,350]
     KMER_Lengths = [75]
     NumOfReads = list()
     for i in FastaSizeList:
@@ -76,7 +76,7 @@ def SizeDistroBuilder(INSlength,NumOfReads):
             NumOfReads = Number or reads for the distribution
             Objective of class: return a distribution file
     """
-    Sigma = [1,9,11,13,6]
+    Sigma = [1,3]#[1,9,11,13,6]
     Mean = INSlength
     for i in Sigma:
         for j in Mean:
@@ -164,7 +164,7 @@ def MetaSimulator(VelvetAnalysisDir,Time,MetaSimDir,InsertLengths,FastaFileList,
                         MetaSimFiles = MetaSimDir+ '/' + '*.fna'
                         SetOfFNAFiles = set(glob.glob(MetaSimFiles))
                         FNADifference = list(SetOfFNAFiles - FNAFileSet)
-                        ConcatenatedFilename=''.join([MetaSimDir,'/',str(INS),str(X),str(K),str(apple),'.fna'])
+                        ConcatenatedFilename=''.join([MetaSimDir,'/','INS',str(INS),'EXP',str(X),'KMER',str(K),'SIGMA',str(apple),'.fna'])
                         MergeFastaFiles(FNADifference, ConcatenatedFilename)
                         VelvetCommander(31,Time,ConcatenatedFilename,INS,apple,ExpectedCoverage,LincolnLog)
                         VelvetAnalysis(filename,VelvetAnalysisDir)#This needs to be redone
@@ -220,7 +220,7 @@ def VelvetCommander(K,Time,FNAFile,INS,apple,ExpectedCoverage,LincolnLog):
     Scaffolding = ['yes','no']
     CovCutoff  = [10,20]
     for SC in Scaffolding:
-        for K in [65,61,55]:
+        for K in [65,55]:
             for i,MC in enumerate(MinContigs):
                 for j,CC in enumerate(CovCutoff):
                     FolderName1             = CurrentDirectory + 'VelvetOutputs/%s-%dKMER-%dXC-%dMC-%dCC-%dINS-%dSig-%s_SCAFF'%(FNAFile[0:-4],K,ExpectedCoverage,MC,CC,INS,apple,SC)
